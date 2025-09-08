@@ -1,5 +1,5 @@
 {
-  "name": "buffcat-codebase",
+  "name": "buffcat",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -7,7 +7,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "prepare": "husky init"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
