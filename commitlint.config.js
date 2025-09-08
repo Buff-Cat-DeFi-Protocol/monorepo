@@ -5,12 +5,12 @@ module.exports = {
       2,
       "always",
       [
-        "web", // apps/website
+        "web", // apps/web
         "contract: eth", // contracts/ethereum
         "contract: base", // contracts/base
         "program: sol", // programs/solana
-        "all", // cross-cutting changes 
-      ]
-    ]
-  }
+        "all", // cross-cutting changes
+      ],
+    ],
+  },
 };
