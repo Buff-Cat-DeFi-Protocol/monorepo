@@ -1,14 +1,14 @@
-import { TokenMetadata } from "@/types/global";
+import { TokenInfo } from "@uniswap/token-lists";
 
 export type TokenSelectorAtom = {
   isOpen: boolean;
   onClose: () => void;
-  onSelectToken: (token: TokenMetadata) => void;
+  onSelectToken: (token: TokenInfo) => void;
 };
 
 export type SelectedTokensAtom = {
-  lockToken: TokenMetadata | null;
-  unlockToken: TokenMetadata | null;
+  lockToken: TokenInfo | null;
+  unlockToken: TokenInfo | null;
 };
 
 export type Tab = "lock" | "unlock";

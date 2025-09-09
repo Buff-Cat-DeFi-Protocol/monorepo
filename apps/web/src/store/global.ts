@@ -1,11 +1,13 @@
-import { Language, TokenMetadata } from "../types/global";
+import { blockchains } from "@/constants/blockchains";
+import { Blockchain, Language } from "../types/global";
+import { TokenInfo } from "@uniswap/token-lists";
 import { TokenSelectorAtom, SelectedTokensAtom, Tab } from "../types/state";
 import { atom } from "jotai";
 
 export const tokenSelectorAtom = atom<TokenSelectorAtom>({
   isOpen: false,
   onClose: () => {},
-  onSelectToken: (token: TokenMetadata) => {},
+  onSelectToken: (token: TokenInfo) => {},
 });
 
 export const selectedTokensAtom = atom<SelectedTokensAtom>({
@@ -16,3 +18,5 @@ export const selectedTokensAtom = atom<SelectedTokensAtom>({
 export const currentTabAtom = atom<Tab>("lock");
 
 export const selectedLanguageAtom = atom<Language>("english");
+
+export const selectedBlockchainAtom = atom<Blockchain>(blockchains[0]);
