@@ -1,8 +1,21 @@
 "use client";
-import { TokenSelector } from "@/features/dashboard/components/TokenSelector";
 
-export default function Home() {
+import Link from "next/link";
+
+export default function HomePage() {
   return (
-    <TokenSelector isOpen={true} onClose={() => {}} onSelectToken={() => {}} />
+    <div className="container mx-auto min-h-screen flex items-center">
+      <div className="px-80">
+        Buffcat is a locking protocol where users can lock their tokens ($TKN)
+        and get derivate tokens in in return ($bTKN). Users can use their
+        derivative tokens to unlock their original tokens. The exchange ratio is
+        1:1, you get an equal amount of tokens in return of locking and
+        unlocking. Go to{" "}
+        <Link className="underline underline-offset-4" href={"/dashboard"}>
+          Dashboard
+        </Link>{" "}
+        for Buffcat's dashboard.
+      </div>
+    </div>
   );
 }

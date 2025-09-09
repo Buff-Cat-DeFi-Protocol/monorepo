@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import { Toaster } from "@/components/ui/sonner";
 import { CustomLayout } from "@/components/CustomLayout";
 import { buffcatWebsiteMetadata, jsonLd } from "./metadata";
 
@@ -22,10 +21,7 @@ export default function RootLayout({
       <body
         className={`${font.variable} antialiased bg-custom-root-bg text-custom-root-text font-semibold`}
       >
-        <CustomLayout>
-          {children}
-          <Toaster />
-        </CustomLayout>
+        <CustomLayout>{children}</CustomLayout>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

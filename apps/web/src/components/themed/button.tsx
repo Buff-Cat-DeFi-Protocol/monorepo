@@ -2,13 +2,32 @@ import { Button, buttonVariants } from "../ui/button";
 import { motion } from "motion/react";
 import { VariantProps } from "class-variance-authority";
 
+type Style = "primary" | "secondary";
+
+interface ThemedButtonProps {
+  style: Style;
+}
+
+const styles: {
+  [key in Style]: string;
+} = {
+  primary: `bg-custom-primary-color text-custom-primary-text
+  hover:bg-custom-primary-color hover:text-custom-primary-text
+  border-none hover:border-none`,
+  secondary: `bg-custom-card-alt border border-custom-card-border
+  hover:bg-custom-card-alt hover:text-custom-primary-text hover:border-custom-card-border`,
+};
+
 export default function ThemedButton({
-  className,
+  style,
   variant,
   size,
+  className,
   children,
   ...props
-}: React.ComponentProps<"button"> & VariantProps<typeof buttonVariants>) {
+}: ThemedButtonProps &
+  VariantProps<typeof buttonVariants> &
+  React.ComponentProps<"button">) {
   return (
     <motion.div
       whileHover={{ y: -2 }}
@@ -18,9 +37,7 @@ export default function ThemedButton({
       <Button
         variant={variant}
         size={size}
-        className={`${className}
-        bg-custom-primary-color text-custom-primary-text cursor-pointer
-        hover:bg-custom-primary-color hover:text-custom-primary-text`}
+        className={`${className} cursor-pointer ${style == "primary" ? styles.primary : styles.secondary}`}
         {...props}
       >
         {children}
