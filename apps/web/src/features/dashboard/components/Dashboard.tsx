@@ -19,48 +19,43 @@ export default function Dashboard() {
   if (isAllTokensListLoading) return <DashboardSkeleton />;
 
   return (
-    <div className="mx-auto mt-6 mb-12">
-      <div className="w-120 min-h-80 rounded-2xl p-4 bg-custom-dashboard-primary-color border border-white/30">
-        <Tabs
-          defaultValue="Lock"
-          onValueChange={(value) => setActiveTab(value)}
-        >
-          <TabsList className="w-full bg-transparent flex justify-between">
-            <div>
-              <TabsTrigger
-                key="Lock"
-                value="Lock"
-                className={`cursor-pointer data-[state=active]:bg-transparent text-sm leading-none font-medium
+    <div className="mx-auto mt-6 mb-12 w-120 h-119 rounded-2xl p-4 border border-white/30">
+      <Tabs defaultValue="Lock" onValueChange={(value) => setActiveTab(value)}>
+        <TabsList className="w-full bg-transparent flex justify-between">
+          <div>
+            <TabsTrigger
+              key="Lock"
+              value="Lock"
+              className={`cursor-pointer data-[state=active]:bg-transparent text-sm leading-none font-medium
                 data-[state=active]:text-custom-primary-text data-[state=inactive]:text-custom-muted-text`}
-              >
-                Lock
-              </TabsTrigger>
-              <TabsTrigger
-                key="Unlock"
-                value="Unlock"
-                className={`cursor-pointer data-[state=active]:bg-transparent text-sm leading-none font-medium
+            >
+              Lock
+            </TabsTrigger>
+            <TabsTrigger
+              key="Unlock"
+              value="Unlock"
+              className={`cursor-pointer data-[state=active]:bg-transparent text-sm leading-none font-medium
                 data-[state=active]:text-custom-primary-text data-[state=inactive]:text-custom-muted-text`}
-              >
-                Unlock
-              </TabsTrigger>
-            </div>
-          </TabsList>
-          <div className="px-4">
-            <TabsContent key="Lock" value="Lock">
-              <LockPanel
-                blockchain={blockchainStateValue}
-                fetchedTokens={selectedBlockchainAllTokensList}
-              />
-            </TabsContent>
-            <TabsContent key="Unlock" value="Unlock">
-              <UnlockPanel
-                blockchain={blockchainStateValue}
-                fetchedTokens={selectedBlockchainAllTokensList}
-              />
-            </TabsContent>
+            >
+              Unlock
+            </TabsTrigger>
           </div>
-        </Tabs>
-      </div>
+        </TabsList>
+        <div className="px-4">
+          <TabsContent key="Lock" value="Lock">
+            <LockPanel
+              blockchain={blockchainStateValue}
+              fetchedTokens={selectedBlockchainAllTokensList}
+            />
+          </TabsContent>
+          <TabsContent key="Unlock" value="Unlock">
+            <UnlockPanel
+              blockchain={blockchainStateValue}
+              fetchedTokens={selectedBlockchainAllTokensList}
+            />
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

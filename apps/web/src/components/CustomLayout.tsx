@@ -11,6 +11,7 @@ import { SolanaProvider } from "@/features/wallet/config/solanaConfig";
 import { wagmiConfig } from "@/features/wallet/config/wagmiConfig";
 import { toast } from "sonner";
 import { Toaster } from "./ui/sonner";
+import { Footer } from "./Footer";
 
 export function CustomLayout({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient({
@@ -35,6 +36,7 @@ export function CustomLayout({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <SolanaProvider>
           {children}
+          <Footer />
           <Toaster position="bottom-right" richColors />
         </SolanaProvider>
       </QueryClientProvider>
