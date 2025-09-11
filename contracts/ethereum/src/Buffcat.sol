@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {IBuffcat} from "./IBuffcat.sol";
 import {SafeERC20} from "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import {OwnableUpgradeable} from "@openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -10,7 +11,8 @@ import {Initializable} from "@openzeppelin-contracts-upgradeable/proxy/utils/Ini
 import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
 import {Clones} from "@openzeppelin-contracts/proxy/Clones.sol";
 
-contract Buffcat is
+contract BuffcatUpgradeable is
+    IBuffcat,
     Initializable,
     OwnableUpgradeable,
     UUPSUpgradeable,
@@ -34,17 +36,6 @@ contract Buffcat is
 
     mapping(address => bool) public whitelistedTokens;
     mapping(address => address) tokenDerivatives;
-    
-    // Events :-
-    event DeveloperFeesDistributed(address developerWallet, address token, uint256 fees, uint256 timestamp);
-    event FounderFeesDistributed(address founderWallet, address token, uint256 fees, uint256 timestamp);
-    event TokenWhitelisted(address token, uint256 timestamp);
-    event TokenBlacklisted(address token, uint256 timestamp);
-    event AssetsLocked(address account, address token, uint256 amount, uint256 timestamp);
-    event AssetsUnlocked(address account, address token, uint256 amount, uint256 timestamp);
-    event DerivativeContractDeployed(address token, address derivative, uint256 timestamp);
-
-    // Errors :-
 
     // Functions :-
     // 1. Inherited Functions :-
