@@ -68,4 +68,9 @@ contract BuffcatUpgradeable is
         feePercentageDivider = 1000;
     }
 
+    function _authorizeUpgrade(
+        address _newImplementation
+    ) internal override onlyOwner {
+        // Additional validation logic could go here if needed
+    }
 }
