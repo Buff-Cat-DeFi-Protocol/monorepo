@@ -2,16 +2,14 @@
 pragma solidity ^0.8.13;
 
 import {IBuffcat} from "./interfaces/IBuffcat.sol";
-import {IERC20} from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import {IERC20Metadata} from "@openzeppelin-contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {OwnableUpgradeable} from "@openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin-contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin-contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {Initializable} from "@openzeppelin-contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Clones} from "@openzeppelin-contracts/proxy/Clones.sol";
-import {IDerivativeToken} from "./interfaces/IDerivativeToken.sol";
+import {IToken} from "./interfaces/IToken.sol";
 import {DerivativeToken} from "./token/DerivativeToken.sol";
 
 contract BuffcatUpgradeable is
@@ -22,7 +20,7 @@ contract BuffcatUpgradeable is
     PausableUpgradeable,
     ReentrancyGuardUpgradeable
 {
-    using SafeERC20 for IERC20;
+    using SafeERC20 for IToken;
 
     // Constants :-
     uint256 public MIN_LOCK_VALUE;
@@ -79,13 +77,13 @@ contract BuffcatUpgradeable is
         if (_amount < MIN_LOCK_VALUE) revert InvalidAmount();
         if (!whitelistedTokens[_token]) revert NotWhitelisted();
 
-        uint256 allowance = IERC20(_token).allowance(msg.sender, address(this));
+        uint256 allowance = IToken(_token).allowance(msg.sender, address(this));
         if (allowance < _amount) revert InsufficientAllowance();
-        if (IERC20(_token).balanceOf(msg.sender) < _amount) revert InsufficientBalance();
+        if (IToken(_token).balanceOf(msg.sender) < _amount) revert InsufficientBalance();
 
         address derivativeAddress = tokenDerivatives[_token];
         if (derivativeAddress == address(0)) {
-            IERC20Metadata t = IERC20Metadata(_token);
+            IToken t = IToken(_token);
             string memory name = t.name();
             string memory symbol = t.symbol();
             uint8 decimals = t.decimals();
@@ -98,7 +96,7 @@ contract BuffcatUpgradeable is
             emit DerivativeContractDeployed(_token, derivativeAddress, block.timestamp);
         }
 
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        IToken(_token).safeTransferFrom(msg.sender, address(this), _amount);
         
         uint256 fee = calculateFee(_amount);
         uint256 deductedAmount = _amount - fee;
@@ -120,11 +118,11 @@ contract BuffcatUpgradeable is
         if (derivativeAddress == address(0)) revert NoDerivativeDeployed();
         if (derivativeAddress != _derivative) revert InvalidDerivativeAddress();
 
-        uint256 allowance = IERC20(_derivative).allowance(msg.sender, address(this));
+        uint256 allowance = IToken(_derivative).allowance(msg.sender, address(this));
         if (allowance < _amount) revert InsufficientAllowance();
-        if (IERC20(_derivative).balanceOf(msg.sender) < _amount) revert InsufficientBalance();
+        if (IToken(_derivative).balanceOf(msg.sender) < _amount) revert InsufficientBalance();
 
-        IERC20(_derivative).safeTransferFrom(msg.sender, address(this), _amount);
+        IToken(_derivative).safeTransferFrom(msg.sender, address(this), _amount);
         
         uint256 fee = calculateFee(_amount);
         uint256 deductedAmount = _amount - fee;
@@ -132,7 +130,7 @@ contract BuffcatUpgradeable is
         distributeFee(_token, fee);
 
         IDerivativeToken(_derivative).burn(_amount);
-        IERC20(_token).transfer(msg.sender, deductedAmount);
+        IToken(_token).transfer(msg.sender, deductedAmount);
         emit AssetsUnlocked(msg.sender, _token, _amount, block.timestamp);
     }
 
@@ -149,8 +147,8 @@ contract BuffcatUpgradeable is
     ) internal {
         uint256 half = _fee / 2;
 
-        IERC20(_token).safeTransfer(founder, half);
-        IERC20(_token).safeTransfer(developer, half);
+        IToken(_token).safeTransfer(founder, half);
+        IToken(_token).safeTransfer(developer, half);
 
         emit DeveloperFeesDistributed(developer, _token, half, block.timestamp);
         emit FounderFeesDistributed(founder, _token, half, block.timestamp);
