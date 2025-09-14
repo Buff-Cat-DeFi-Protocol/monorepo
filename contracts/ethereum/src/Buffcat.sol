@@ -92,7 +92,7 @@ contract BuffcatUpgradeable is
             string memory derivativeSymbol = string(abi.encodePacked("li", symbol));
 
             derivativeAddress = Clones.clone(derivativeImplementation);
-            IDerivativeToken(derivativeAddress).initialize(address(this), derivativeName, derivativeSymbol, decimals);
+            IToken(derivativeAddress).initialize(address(this), derivativeName, derivativeSymbol, decimals);
             emit DerivativeContractDeployed(_token, derivativeAddress, block.timestamp);
         }
 
@@ -103,7 +103,7 @@ contract BuffcatUpgradeable is
 
         distributeFee(_token, fee);
 
-        IDerivativeToken(_token).mint(msg.sender, deductedAmount);
+        IToken(_token).mint(msg.sender, deductedAmount);
         emit AssetsLocked(msg.sender, _token, _amount, block.timestamp);
     }
 
@@ -129,7 +129,7 @@ contract BuffcatUpgradeable is
 
         distributeFee(_token, fee);
 
-        IDerivativeToken(_derivative).burn(_amount);
+        IToken(_derivative).burn(_amount);
         IToken(_token).transfer(msg.sender, deductedAmount);
         emit AssetsUnlocked(msg.sender, _token, _amount, block.timestamp);
     }

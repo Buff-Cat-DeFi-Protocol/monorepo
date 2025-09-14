@@ -8,4 +8,10 @@ interface IToken is IERC20, IERC20Metadata {
     function burn(uint256 amount) external;
     function burnFrom(address account, uint256 amount) external;
     function mint(address to, uint256 amount) external;
+    function initialize(
+        address _initialOwner, 
+        string calldata _name, 
+        string calldata _symbol, 
+        uint8 _decimals
+    ) external;
 }
