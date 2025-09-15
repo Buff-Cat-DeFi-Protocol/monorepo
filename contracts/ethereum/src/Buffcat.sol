@@ -179,17 +179,6 @@ contract BuffcatUpgradeable is
         }
     }
 
-    function blacklist(
-        address[] calldata _tokens
-    ) external onlyAuthorizedUpdater {
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            address token = _tokens[i];
-            if (token == address(0)) revert ZeroAddress();
-            whitelistedTokens[token] = false;
-            emit TokenBlacklisted(token, block.timestamp);
-        }
-    }
-
     function pause() public onlyOwner {
         _pause();
     }
