@@ -189,4 +189,12 @@ contract BuffcatUpgradeable is
             emit TokenBlacklisted(token, block.timestamp);
         }
     }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
 }
