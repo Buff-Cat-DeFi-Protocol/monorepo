@@ -33,3 +33,49 @@ pub enum BuffcatErrorCodes {
     #[msg("Token not whitelisted.")]
     NotWhitelisted,
 }
+
+// Events
+#[event]
+pub struct DeveloperFeesDistributed {
+    pub developer_wallet: Pubkey,
+    pub token: Pubkey,
+    pub fees: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct FounderFeesDistributed {
+    pub founder_wallet: Pubkey,
+    pub token: Pubkey,
+    pub fees: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct TokenWhitelisted {
+    pub token: Pubkey,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct AssetsLocked {
+    pub account: Pubkey,
+    pub token: Pubkey,
+    pub amount: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct AssetsUnlocked {
+    pub account: Pubkey,
+    pub token: Pubkey,
+    pub amount: u64,
+    pub timestamp: i64,
+}
+
+[#event]
+pub struct DerivativeTokenMinted {
+    pub token: Pubkey,
+    pub derivative: Pubkey,
+    pub timestamp: i64,
+}
