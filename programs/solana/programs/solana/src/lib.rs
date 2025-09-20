@@ -31,6 +31,40 @@ pub mod buffcat {
         global_info.min_lock_value = 400;
         Ok(())
     }
+
+    pub fn lock(
+        ctx: Context<Lock>,
+        amount: u64
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn unlock(
+        ctx: Context<Unlock>,
+        amount: u64
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn whitelist(ctx: Context<Whitelist>) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn add_authorized_updater(
+        ctx: Context<AddAuthorizedUpdaters>,
+        updater: Pubkey
+    ) -> Result<()> {
+        let signer = &ctx.accounts.signer;
+        let global_info = &ctx.accounts.global_info;
+        require!(
+            signer.key() == global_info.founder_wallet, 
+            BuffcatErrorCodes::InvalidPubkey
+        );
+        let authorized_updater  = &mut ctx.accounts.authorized_updater_info;
+        authorized_updater.key = updater;
+        authorized_updater.active = true;
+        Ok(())
+    }
 }
 
 pub fn calculate_fee(
@@ -201,10 +235,7 @@ pub struct AddAuthorizedUpdaters<'info> {
     pub system_program: Program<'info, System>,
 
     // User :-
-    #[account(
-        mut,
-        constraint = signer.key() == global_info.founder_wallet
-    )]
+    #[account(mut)]
     pub signer: Signer<'info>,
 
     // Initialized PDA
