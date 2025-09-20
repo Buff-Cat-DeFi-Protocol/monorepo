@@ -3,5 +3,6 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "rust-analyzer.linkedProjects": ["programs/solana/Cargo.toml"]
 }

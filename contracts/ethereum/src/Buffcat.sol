@@ -111,29 +111,27 @@ contract BuffcatUpgradeable is
         emit AssetsLocked(msg.sender, _token, _amount, block.timestamp);
     }
 
-    function unlock(address _token, address _derivative, uint256 _amount) external nonReentrant whenNotPaused {
+    function unlock(address _token, uint256 _amount) external nonReentrant whenNotPaused {
         if (_token == address(0)) revert ZeroAddress();
-        if (_derivative == address(0)) revert ZeroAddress();
         if (_amount == 0) revert ZeroAmountValue();
         if (_amount < MIN_LOCK_VALUE) revert InvalidAmount();
         if (!whitelistedTokens[_token]) revert NotWhitelisted();
 
         address derivativeAddress = tokenDerivatives[_token];
         if (derivativeAddress == address(0)) revert NoDerivativeDeployed();
-        if (derivativeAddress != _derivative) revert InvalidDerivativeAddress();
 
-        uint256 allowance = IToken(_derivative).allowance(msg.sender, address(this));
+        uint256 allowance = IToken(derivativeAddress).allowance(msg.sender, address(this));
         if (allowance < _amount) revert InsufficientAllowance();
-        if (IToken(_derivative).balanceOf(msg.sender) < _amount) revert InsufficientBalance();
+        if (IToken(derivativeAddress).balanceOf(msg.sender) < _amount) revert InsufficientBalance();
 
-        IToken(_derivative).safeTransferFrom(msg.sender, address(this), _amount);
+        IToken(derivativeAddress).safeTransferFrom(msg.sender, address(this), _amount);
         
         uint256 fee = calculateFee(_amount);
         uint256 deductedAmount = _amount - fee;
 
         distributeFee(_token, fee);
 
-        IToken(_derivative).burn(_amount);
+        IToken(derivativeAddress).burn(_amount);
         IToken(_token).transfer(msg.sender, deductedAmount);
         emit AssetsUnlocked(msg.sender, _token, _amount, block.timestamp);
     }
