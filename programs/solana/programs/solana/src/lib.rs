@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
-use anchor_spl::associated_token::get_associated_token_address;
+use anchor_spl::associated_token::{get_associated_token_address, AssociatedToken};
 
 declare_id!("Dua4QHV8oHr8Mxna9jngcTgACVVpitrAdDK4xVHufjCG");
 
@@ -47,6 +47,13 @@ pub mod buffcat {
     }
 
     pub fn whitelist(ctx: Context<Whitelist>) -> Result<()> {
+        let signer = &ctx.accounts.signer;
+        let authorized_updater_info = &ctx.accounts.authorized_updater_info;
+        let token_mint = &ctx.accounts.token_mint;
+        let token_info = &mut ctx.accounts.token_info;
+        token_info.original_mint = token_mint.key();
+        token_info.whitelisted = true;
+        token_info.vault_authority_bump = ctx.bumps.vault_authority;
         Ok(())
     }
 
@@ -95,6 +102,7 @@ pub struct Lock<'info> {
     // System Accounts :-
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 
     // Lock Token Mint :-
     #[account(
@@ -104,6 +112,7 @@ pub struct Lock<'info> {
     pub token_mint: Account<'info, Mint>,
 
     // User :-
+    #[account(mut)]
     pub signer: Signer<'info>,
 
     // Token Accounts :-
@@ -126,13 +135,11 @@ pub struct Lock<'info> {
     )]
     pub vault_authority: SystemAccount<'info>,
     #[account(
-        mut,
-        constraint = vault_token_account.mint == token_mint.key() && 
-        vault_token_account.owner == vault_authority.key(),
-        address = get_associated_token_address(
-            &vault_authority.key(), 
-            &token_mint.key()
-        ))]
+        init_if_needed,
+        payer = signer,
+        associated_token::mint = token_mint,
+        associated_token::authority = vault_authority
+    )]
     pub vault_token_account: Account<'info, TokenAccount>,
 
     // Contract Accounts :-
@@ -298,6 +305,11 @@ pub struct Whitelist<'info> {
         space = 8 + TokenInfo::LEN,
     )]
     pub token_info: Account<'info, TokenInfo>,
+    #[account(
+        seeds = [b"vault_authority", token_mint.key().as_ref()],
+        bump
+    )]
+    pub vault_authority: UncheckedAccount<'info>,
 }
 
 pub const GLOBAL_INFO_STATIC_SEED: &[u8] = b"global_info";
