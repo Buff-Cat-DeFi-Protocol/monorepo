@@ -8,7 +8,7 @@ module.exports = {
         "web", // apps/web
         "contract: eth", // contracts/ethereum
         "contract: base", // contracts/base
-        "program: sol", // programs/solana
+        "contract: sol", // contracts/solana
         "all", // cross-cutting changes
       ],
     ],
