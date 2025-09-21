@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
+use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::token_interface::{transfer_checked, TransferChecked};
 use anchor_spl::associated_token::{get_associated_token_address, AssociatedToken};
 
 declare_id!("Dua4QHV8oHr8Mxna9jngcTgACVVpitrAdDK4xVHufjCG");
@@ -88,8 +89,6 @@ pub mod buffcat {
     }
 
     pub fn whitelist(ctx: Context<Whitelist>) -> Result<()> {
-        let signer = &ctx.accounts.signer;
-        let authorized_updater_info = &ctx.accounts.authorized_updater_info;
         let token_mint = &ctx.accounts.token_mint;
         let token_info = &mut ctx.accounts.token_info;
         token_info.original_mint = token_mint.key();
@@ -121,6 +120,55 @@ pub fn calculate_fee(
     fee_percentage_divider: u64
 ) -> u64 {
     return (amount * fee_percentage) / fee_percentage_divider;
+}
+
+pub fn distribute_fee<'info>(
+    token_mint: Account<'info, Mint>,
+    fee: u64,
+    timestamp: i64,
+    global_info: Account<'info, GlobalInfo>,
+    developer_ata: Account<'info, TokenAccount>,
+    founder_ata: Account<'info, TokenAccount>,
+    vault_authority: SystemAccount<'info>,
+    vault_ata: Account<'info, TokenAccount>,
+    token_program: Program<'info, Token>
+) -> Result<()> {
+    let developer_share = (fee * global_info.developer_fee_share) / 100;
+    let founder_share = (fee * global_info.founder_fee_share) / 100;
+ 
+    let cpi_accounts = TransferChecked {
+        mint: token_mint.to_account_info(),
+        from: vault_ata.to_account_info(),
+        to: developer_ata.to_account_info(),
+        authority: vault_authority.to_account_info(),
+    };
+    let cpi_program = token_program.to_account_info();
+    let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+    transfer_checked(cpi_context, developer_share, token_mint.decimals)?;
+
+    let cpi_accounts = TransferChecked {
+        mint: token_mint.to_account_info(),
+        from: vault_ata.to_account_info(),
+        to: founder_ata.to_account_info(),
+        authority: vault_authority.to_account_info(),
+    };
+    let cpi_program = token_program.to_account_info();
+    let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+    transfer_checked(cpi_context, founder_share, token_mint.decimals)?;
+
+    emit!(DeveloperFeeShareDistributed { 
+        developer_wallet: global_info.developer_wallet,
+        token: token_mint.key(),
+        amount: developer_share,
+        timestamp: timestamp
+    });
+    emit!(FounderFeeShareDistributed { 
+        founder_wallet: global_info.founder_wallet,
+        token: token_mint.key(),
+        amount: founder_share,
+        timestamp: timestamp
+    });
+    Ok(())
 }
 
 #[derive(Accounts)]
@@ -416,18 +464,18 @@ pub enum BuffcatErrorCodes {
 
 // Events
 #[event]
-pub struct DeveloperFeesDistributed {
+pub struct DeveloperFeeShareDistributed {
     pub developer_wallet: Pubkey,
     pub token: Pubkey,
-    pub fees: u64,
+    pub amount: u64,
     pub timestamp: i64,
 }
 
 #[event]
-pub struct FounderFeesDistributed {
+pub struct FounderFeeShareDistributed {
     pub founder_wallet: Pubkey,
     pub token: Pubkey,
-    pub fees: u64,
+    pub amount: u64,
     pub timestamp: i64,
 }
 
