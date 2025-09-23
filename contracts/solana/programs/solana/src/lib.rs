@@ -1,7 +1,19 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
-use anchor_spl::token_interface::{transfer_checked, TransferChecked};
-use anchor_spl::associated_token::{get_associated_token_address, AssociatedToken};
+use anchor_lang::system_program::{create_account, CreateAccount};
+use anchor_lang::solana_program::program::{invoke};
+use anchor_spl::token::{self, Mint, Token, TokenAccount, InitializeMint, MintTo, mint_to};
+use mpl_token_metadata::state::Metadata;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_2022::{
+        spl_token_2022::{
+            extension::ExtensionType,
+            instruction::{set_authority},
+        },
+        Mint, Token2022, InitializeMint2, initialize_mint2,
+    },
+    token_interface::{spl_token_metadata_interface::instruction::initialize, Mint as InterfaceMint, TokenAccount},
+};
 
 declare_id!("Dua4QHV8oHr8Mxna9jngcTgACVVpitrAdDK4xVHufjCG");
 
@@ -9,8 +21,8 @@ declare_id!("Dua4QHV8oHr8Mxna9jngcTgACVVpitrAdDK4xVHufjCG");
 pub mod buffcat {
     use super::*;
 
-    pub fn initialize(
-        ctx: Context<Initialize>,
+    pub fn initialize_program(
+        ctx: Context<InitializeProgram>,
         developer_wallet: Pubkey,
         founder_wallet: Pubkey
     ) -> Result<()> {
@@ -42,15 +54,19 @@ pub mod buffcat {
         let associated_token_program = &ctx.accounts.associated_token_program;
 
         let token_mint = &ctx.accounts.token_mint;
+        let derivative_mint = &ctx.accounts.derivative_mint;
+        let derivative_authority = &ctx.accounts.derivative_authority;
         let token_info = &ctx.accounts.token_info;
         let vault_authority = &ctx.accounts.vault_authority;
-        let vault_token_account = &ctx.accounts.vault_token_account;
+        let vault_ata = &ctx.accounts.vault_ata;
 
         let global_info = &ctx.accounts.global_info;
         let founder_ata = &ctx.accounts.founder_ata;
         let developer_ata = &ctx.accounts.developer_ata;
 
         let signer = &ctx.accounts.signer;
+        let signer_token_ata = &ctx.accounts.signer_token_ata;
+        let signer_derivative_ata = &ctx.accounts.signer_derivative_ata;
 
         require!(
             amount != 0, 
@@ -65,18 +81,122 @@ pub mod buffcat {
             BuffcatErrorCodes::NotWhitelisted
         );
 
-        // check if derivative has been deployed by 
-        // checking derivative_mint field in token_info
-        // if not then
-        // fetch token name, symbol and decimals
-        // modify name to have "Liquid " at start
-        // modify symbol to have "li" at start
-        // deploy new derivative token mint
-        // transfer lock token mint to vault
-        // deduct fee and distribute to founder & developer wallet
-        // mint derivative tokens equal to fee
-        // fee deducted amount to user's derivative ata
-        // emit the event
+        let clock = Clock::get()?;
+        let current_timestamp = clock.unix_timestamp;
+
+        if (token_info.derivative_mint == Pubkey::default()) {
+            let metadata: Metadata = Metadata::safe_deserialize(
+                &ctx.accounts.metadata_account_info.data.borrow()
+            )?;
+            let derivative_name = String::from("Liquid " + metadata.data.name);
+            let derivative_symbol = String::from("li" + metadata.data.symbol);
+
+            let space = ExtensionType::try_calculate_account_len::<Mint>(&[
+                ExtensionType::MetadataPointer,
+            ]).unwrap();
+            let metadata_space = 500;
+            let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
+
+            create_account(
+                CpiContext::new(
+                    system_program.to_account_info(),
+                    CreateAccount {
+                        from: signer.to_account_info(),
+                        to: derivative_mint.to_account_info(),
+                    },
+                ),
+                lamports_required,
+                (space + metadata_space) as u64,
+                token_program.key(),
+            )?;
+
+            initialize_mint2(
+                CpiContext::new(
+                    token_program.to_account_info(),
+                    InitializeMint2 {
+                        mint:derivative_mint.to_account_info(),
+                    },
+                ),
+                9,
+                &derivative_authority.key(),
+                Some(&derivative_authority.key()),
+            )?;
+
+            let initialize_metadata_ix = initialize(
+                &spl_token_2022::ID,
+                derivative_mint.key(),
+                derivative_authority.key(),
+                derivative_mint.key(),
+                derivative_authority.key(),
+                derivative_name,
+                derivative_symbol,
+                metadata.data.uri,
+            )?;
+
+            invoke(
+                &initialize_metadata_ix,
+                &[derivative_mint.to_account_info()],
+            )?;
+
+            token_info.derivative_mint = derivative_mint.key();
+
+            emit!(DerivativeTokenMinted {
+                token: token_mint.key(),
+                derivative: derivative_mint.key(),
+                timestamp: current_timestamp
+            });
+        }
+
+        require!(
+            derivative_mint.key() == token_info.derivative_mint.key(), 
+            BuffcatErrorCodes::InvalidDerivativeAddress
+        );
+
+        let cpi_accounts = TransferChecked {
+            mint: token_mint.to_account_info(),
+            from: signer_token_ata.to_account_info(),
+            to: vault_ata.to_account_info(),
+            authority: signer.to_account_info(),
+        };
+        let cpi_program = token_program.to_account_info();
+        let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+        transfer_checked(cpi_context, amount, token_mint.decimals)?;
+
+        let fee = calculate_fee(
+            amount, 
+            global_info.fee_percentage, 
+            global_info.fee_percentage_divider
+        );
+        let deducted_amount = amount - fee;
+        
+        distribute_fee(
+            token_mint, 
+            fee, 
+            current_timestamp, 
+            global_info, 
+            developer_ata, 
+            founder_ata, 
+            vault_authority, 
+            vault_ata, 
+            token_program
+        )?;
+
+        let cpi_accounts = MintTo {
+            mint: derivative_mint.to_account_info(),
+            to: signer_derivative_ata.to_account_info(),
+            authority: derivative_authority.to_account_info()
+        };
+        let cpi_program = token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+
+        mint_to(cpi_ctx, deducted_amount)?;
+
+        emit!(AssetsLocked { 
+            account: signer.key(),
+            token: token_mint.key(),
+            amount: developer_share,
+            timestamp: current_timestamp
+        });
 
         Ok(())
     }
@@ -156,6 +276,7 @@ pub fn distribute_fee<'info>(
     let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
     transfer_checked(cpi_context, founder_share, token_mint.decimals)?;
 
+    // add ata field
     emit!(DeveloperFeeShareDistributed { 
         developer_wallet: global_info.developer_wallet,
         token: token_mint.key(),
@@ -172,7 +293,7 @@ pub fn distribute_fee<'info>(
 }
 
 #[derive(Accounts)]
-pub struct Initialize<'info> {
+pub struct InitializeProgram<'info> {
     pub system_program: Program<'info, System>,
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -199,10 +320,33 @@ pub struct Lock<'info> {
         @ ProgramError::UninitializedAccount
     )]
     pub token_mint: Account<'info, Mint>,
+    pub metadata_account: AccountInfo<'info>,
+
+    /// CHECK: This account will be created and initialized conditionally
+    #[account(mut)]
+    pub derivative_mint: UncheckedAccount<'info>,
+    #[account(
+        seeds = [
+        DERIVATIVE_AUTHORITY_SEED,
+        token_mint.key()
+        ], bump
+    )]
+    pub derivative_authority: UncheckedAccount<'info>,
 
     // User :-
     #[account(mut)]
     pub signer: Signer<'info>,
+    #[account(
+        constraint = signer_token_ata.owner == signer.key()
+        && signer_token_ata.mint == token_mint.key()
+    )]
+    pub signer_token_ata: Account<'info, TokenAccount>,
+    #[account(
+        constraint = signer_derivative_ata.owner == signer.key()
+        && signer_derivative_ata.mint == derivative_mint.key()
+    )]
+    pub signer_derivative_ata: Account<'info, TokenAccount>,
+
 
     // Token Accounts :-
     #[account(
@@ -217,7 +361,7 @@ pub struct Lock<'info> {
     pub token_info: Account<'info, TokenInfo>,
     #[account(
         seeds = [
-            VAULT_STATIC_SEED, 
+            VAULT_AUTHORITY_STATIC_SEED, 
             token_mint.key().as_ref()
         ], 
         bump,
@@ -229,7 +373,7 @@ pub struct Lock<'info> {
         associated_token::mint = token_mint,
         associated_token::authority = vault_authority
     )]
-    pub vault_token_account: Account<'info, TokenAccount>,
+    pub vault_ata: Account<'info, TokenAccount>,
 
     // Contract Accounts :-
     #[account(
@@ -266,16 +410,16 @@ pub struct Unlock<'info> {
     pub signer: Signer<'info>,
     #[account(
         mut,
-        constraint = original_token_account.owner == signer.key() && 
-        original_token_account.mint == token_mint.key()
+        constraint = original_ata.owner == signer.key() && 
+        original_ata.mint == token_mint.key()
     )]
-    pub original_token_account: Account<'info, TokenAccount>,
+    pub original_ata: Account<'info, TokenAccount>,
         #[account(
         mut,
-        constraint = derivative_token_account.owner == signer.key() && 
-        derivative_token_account.mint == token_info.derivative_mint
+        constraint = derivative_ata.owner == signer.key() && 
+        derivative_ata.mint == token_info.derivative_mint
     )]
-    pub derivative_token_account: Account<'info, TokenAccount>,
+    pub derivative_ata: Account<'info, TokenAccount>,
 
     // Token Accounts :-
     #[account(
@@ -290,7 +434,7 @@ pub struct Unlock<'info> {
     pub token_info: Account<'info, TokenInfo>,
     #[account(
         seeds = [
-            VAULT_STATIC_SEED, 
+            VAULT_AUTHORITY_STATIC_SEED, 
             token_mint.key().as_ref()
         ], 
         bump,
@@ -298,13 +442,13 @@ pub struct Unlock<'info> {
     pub vault_authority: SystemAccount<'info>,
     #[account(
         mut,
-        constraint = vault_token_account.mint == token_mint.key() && 
-        vault_token_account.owner == vault_authority.key(),
+        constraint = vault_ata.mint == token_mint.key() && 
+        vault_ata.owner == vault_authority.key(),
         address = get_associated_token_address(
             &vault_authority.key(), 
             &token_mint.key()
         ))]
-    pub vault_token_account: Account<'info, TokenAccount>,
+    pub vault_ata: Account<'info, TokenAccount>,
 
     // Contract Accounts :-
     #[account(
@@ -403,8 +547,10 @@ pub struct Whitelist<'info> {
 
 pub const GLOBAL_INFO_STATIC_SEED: &[u8] = b"global_info";
 pub const TOKEN_INFO_STATIC_SEED: &[u8] = b"token_info";
-pub const VAULT_STATIC_SEED: &[u8] = b"vault";
+pub const VAULT_AUTHORITY_STATIC_SEED: &[u8] = b"vault_authority";
 pub const AUTHORIZED_UPDATER_INFO_STATIC_SEED: &[u8] = b"authorized_updater_info";
+pub const METADATA_STATIC_SEED: &[u8] = b"metadata";
+pub const DERIVATIVE_AUTHORITY_SEED: &[u8] = b"derivative_authority";
 
 #[account]
 pub struct GlobalInfo {
