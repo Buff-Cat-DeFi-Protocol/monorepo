@@ -1,19 +1,21 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{create_account, CreateAccount};
 use anchor_lang::solana_program::program::{invoke};
-use anchor_spl::token::{self, Mint, Token, TokenAccount, InitializeMint, MintTo, mint_to, Burn, TransferChecked};
-use mpl_token_metadata::state::Metadata;
+use anchor_spl::token::{self, Mint, Token, TokenAccount, MintTo, mint_to, Burn, TransferChecked};
+use mpl_token_metadata::accounts::Metadata;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_2022::{
         spl_token_2022::{
-            extension::ExtensionType,
-            instruction::{set_authority},
+            extension::ExtensionType
         },
-        Mint, Token2022, InitializeMint2, initialize_mint2,
+        InitializeMint2, initialize_mint2,
     },
-    token_interface::{spl_token_metadata_interface::instruction::initialize, Mint as InterfaceMint, TokenAccount},
+    token_interface::{spl_token_metadata_interface::instruction::initialize},
 };
+use anchor_spl::token::transfer_checked;
+use anchor_spl::token_interface::spl_token_2022;
+use anchor_spl::token_2022::spl_token_2022::state::Mint as Token2022Mint;
 
 declare_id!("Dua4QHV8oHr8Mxna9jngcTgACVVpitrAdDK4xVHufjCG");
 
@@ -51,12 +53,11 @@ pub mod buffcat {
     ) -> Result<()> {
         let system_program = &ctx.accounts.system_program;
         let token_program = &ctx.accounts.token_program;
-        let associated_token_program = &ctx.accounts.associated_token_program;
 
         let token_mint = &ctx.accounts.token_mint;
         let derivative_mint_acc = &ctx.accounts.derivative_mint;
         let derivative_authority = &ctx.accounts.derivative_authority;
-        let token_info = &ctx.accounts.token_info;
+        let token_info = &mut ctx.accounts.token_info;
         let vault_authority = &ctx.accounts.vault_authority;
         let vault_ata = &ctx.accounts.vault_ata;
 
@@ -88,10 +89,10 @@ pub mod buffcat {
             let metadata: Metadata = Metadata::safe_deserialize(
                 &ctx.accounts.metadata.data.borrow()
             )?;
-            let derivative_name = "Liquid ".to_string() + &metadata.data.name;
-            let derivative_symbol = "li".to_string() + &metadata.data.symbol;
+            let derivative_name = "Liquid ".to_string() + &metadata.name;
+            let derivative_symbol = "li".to_string() + &metadata.symbol;
 
-            let space = ExtensionType::try_calculate_account_len::<Mint>(&[
+            let space = ExtensionType::try_calculate_account_len::<Token2022Mint>(&[
                 ExtensionType::MetadataPointer,
             ]).unwrap();
             let metadata_space = 500;
@@ -130,7 +131,7 @@ pub mod buffcat {
                 &derivative_authority.key(),
                 derivative_name,
                 derivative_symbol,
-                metadata.data.uri,
+                metadata.uri,
             );
 
             invoke(
@@ -194,7 +195,7 @@ pub mod buffcat {
         emit!(AssetsLocked { 
             account: signer.key(),
             token: token_mint.key(),
-            amount: developer_share,
+            amount: amount,
             timestamp: current_timestamp
         });
 
@@ -248,6 +249,9 @@ pub mod buffcat {
         );
         let deducted_amount = amount - fee;
 
+        let clock = Clock::get()?;
+        let current_timestamp = clock.unix_timestamp;
+
         distribute_fee(
             token_mint, 
             fee, 
@@ -282,7 +286,7 @@ pub mod buffcat {
         emit!(AssetsUnlocked { 
             account: signer.key(),
             token: token_mint.key(),
-            amount: developer_share,
+            amount: amount,
             timestamp: current_timestamp
         });
 
@@ -440,6 +444,7 @@ pub struct Lock<'info> {
     )]
     pub token_info: Account<'info, TokenInfo>,
     #[account(
+        mut,
         seeds = [
             VAULT_AUTHORITY_STATIC_SEED, 
             token_mint.key().as_ref()
