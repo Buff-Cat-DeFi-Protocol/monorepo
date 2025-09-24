@@ -86,10 +86,10 @@ pub mod buffcat {
 
         if (token_info.derivative_mint == Pubkey::default()) {
             let metadata: Metadata = Metadata::safe_deserialize(
-                &ctx.accounts.metadata_account_info.data.borrow()
+                &ctx.accounts.metadata.data.borrow()
             )?;
-            let derivative_name = String::from("Liquid " + metadata.data.name);
-            let derivative_symbol = String::from("li" + metadata.data.symbol);
+            let derivative_name = "Liquid ".to_string() + &metadata.data.name;
+            let derivative_symbol = "li".to_string() + &metadata.data.symbol;
 
             let space = ExtensionType::try_calculate_account_len::<Mint>(&[
                 ExtensionType::MetadataPointer,
@@ -107,7 +107,7 @@ pub mod buffcat {
                 ),
                 lamports_required,
                 (space + metadata_space) as u64,
-                token_program.key(),
+                &token_program.key(),
             )?;
 
             initialize_mint2(
@@ -124,14 +124,14 @@ pub mod buffcat {
 
             let initialize_metadata_ix = initialize(
                 &spl_token_2022::ID,
-                derivative_mint_acc.key(),
-                derivative_authority.key(),
-                derivative_mint_acc.key(),
-                derivative_authority.key(),
+                &derivative_mint_acc.key(),
+                &derivative_authority.key(),
+                &derivative_mint_acc.key(),
+                &derivative_authority.key(),
                 derivative_name,
                 derivative_symbol,
                 metadata.data.uri,
-            )?;
+            );
 
             invoke(
                 &initialize_metadata_ix,
@@ -261,7 +261,7 @@ pub mod buffcat {
         )?;
 
         let cpi_accounts = Burn {
-            from: signer_derivative_ata,
+            from: signer_derivative_ata.to_account_info(),
             mint: token_mint.to_account_info(),
             authority: signer.to_account_info(),
         };
@@ -324,15 +324,15 @@ pub fn calculate_fee(
 }
 
 pub fn distribute_fee<'info>(
-    token_mint: Account<'info, Mint>,
+    token_mint: &Account<'info, Mint>,
     fee: u64,
     timestamp: i64,
-    global_info: Account<'info, GlobalInfo>,
-    developer_ata: Account<'info, TokenAccount>,
-    founder_ata: Account<'info, TokenAccount>,
-    vault_authority: SystemAccount<'info>,
-    vault_ata: Account<'info, TokenAccount>,
-    token_program: Program<'info, Token>
+    global_info: &Account<'info, GlobalInfo>,
+    developer_ata: &Account<'info, TokenAccount>,
+    founder_ata: &Account<'info, TokenAccount>,
+    vault_authority: &SystemAccount<'info>,
+    vault_ata: &Account<'info, TokenAccount>,
+    token_program: &Program<'info, Token>
 ) -> Result<()> {
     let developer_share = (fee * global_info.developer_fee_share) / 100;
     let founder_share = (fee * global_info.founder_fee_share) / 100;
@@ -401,7 +401,7 @@ pub struct Lock<'info> {
         @ ProgramError::UninitializedAccount
     )]
     pub token_mint: Account<'info, Mint>,
-    pub metadata_account: AccountInfo<'info>,
+    pub metadata: AccountInfo<'info>,
 
     /// CHECK: This account will be created and initialized conditionally
     #[account(mut)]
@@ -409,7 +409,7 @@ pub struct Lock<'info> {
     #[account(
         seeds = [
         DERIVATIVE_AUTHORITY_SEED,
-        token_mint.key()
+        token_mint.key().as_ref()
         ], bump
     )]
     pub derivative_authority: UncheckedAccount<'info>,
@@ -496,7 +496,7 @@ pub struct Unlock<'info> {
     #[account(
         seeds = [
         DERIVATIVE_AUTHORITY_SEED,
-        token_mint.key()
+        token_mint.key().as_ref()
         ], bump
     )]
     pub derivative_authority: UncheckedAccount<'info>,
