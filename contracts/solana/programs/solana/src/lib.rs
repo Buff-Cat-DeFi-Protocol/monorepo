@@ -346,7 +346,7 @@ pub fn distribute_fee<'info>(
     global_info: &Account<'info, GlobalInfo>,
     developer_ata: &Account<'info, TokenAccount>,
     founder_ata: &Account<'info, TokenAccount>,
-    vault_authority: &SystemAccount<'info>,
+    vault_authority: &UncheckedAccount<'info>,
     vault_ata: &Account<'info, TokenAccount>,
     token_program: &Program<'info, Token>
 ) -> Result<()> {
@@ -645,6 +645,7 @@ pub struct Whitelist<'info> {
         space = 8 + TokenInfo::LEN,
     )]
     pub token_info: Account<'info, TokenInfo>,
+    /// CHECK: Token Vault's Authority.
     #[account(
         seeds = [
             VAULT_AUTHORITY_STATIC_SEED, 
