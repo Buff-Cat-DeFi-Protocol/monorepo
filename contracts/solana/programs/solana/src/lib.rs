@@ -85,10 +85,25 @@ pub mod buffcat {
         let clock = Clock::get()?;
         let current_timestamp = clock.unix_timestamp;
 
-        if (token_info.derivative_mint == Pubkey::default()) {
+        if token_info.derivative_mint == Pubkey::default() {
+            if ctx.accounts.metadata.owner != &mpl_token_metadata::ID {
+                return Err(BuffcatErrorCodes::InvalidMetadataProgram.into());
+            }
+
+            if ctx.accounts.metadata.data_is_empty() {
+                return Err(BuffcatErrorCodes::UninitializedMetadata.into());
+            }
+
             let metadata: Metadata = Metadata::safe_deserialize(
                 &ctx.accounts.metadata.data.borrow()
             )?;
+
+            require_keys_eq!(
+                metadata.mint,
+                token_mint.key(),
+                BuffcatErrorCodes::MetadataMintMismatch
+            );
+
             let derivative_name = "Liquid ".to_string() + &metadata.name;
             let derivative_symbol = "li".to_string() + &metadata.symbol;
 
@@ -402,6 +417,8 @@ pub struct Lock<'info> {
         @ ProgramError::UninitializedAccount
     )]
     pub token_mint: Account<'info, Mint>,
+    /// CHECK: Metaplex Metadata account. Its validity is verified in the instruction logic
+    /// using mpl_token_metadata::accounts::Metadata or by checking the program ID.
     pub metadata: AccountInfo<'info>,
 
     /// CHECK: This account will be created and initialized conditionally
@@ -696,6 +713,12 @@ pub enum BuffcatErrorCodes {
     InvalidDerivativeAddress,
     #[msg("Token not whitelisted.")]
     NotWhitelisted,
+    #[msg("Now owned by official program")]
+    InvalidMetadataProgram,
+    #[msg("Metadata not initalized.")]
+    UninitializedMetadata,
+    #[msg("Metadata is not of token submitted.")]
+    MetadataMintMismatch,
 }
 
 // Events
