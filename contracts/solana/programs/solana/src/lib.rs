@@ -430,6 +430,7 @@ pub struct Lock<'info> {
         token_mint.key().as_ref()
         ], bump
     )]
+    /// CHECK: Derivative Token's Mint Authority.
     pub derivative_authority: UncheckedAccount<'info>,
 
     // User :-
@@ -457,6 +458,7 @@ pub struct Lock<'info> {
         constraint = token_info.original_mint == token_mint.key()
     )]
     pub token_info: Account<'info, TokenInfo>,
+    /// CHECK: Token Vault's Authority.
     #[account(
         mut,
         seeds = [
@@ -465,7 +467,7 @@ pub struct Lock<'info> {
         ], 
         bump,
     )]
-    pub vault_authority: SystemAccount<'info>,
+    pub vault_authority: UncheckedAccount<'info>,
     #[account(
         init_if_needed,
         payer = signer,
@@ -511,7 +513,7 @@ pub struct Unlock<'info> {
         constraint = derivative_mint.key() == token_info.derivative_mint
         @ BuffcatErrorCodes::InvalidDerivativeAddress
     )]
-    pub derivative_mint: UncheckedAccount<'info>,
+    pub derivative_mint: Account<'info, Mint>,
 
     // User :-
     #[account(mut)]
@@ -538,6 +540,7 @@ pub struct Unlock<'info> {
         constraint = token_info.original_mint == token_mint.key()
     )]
     pub token_info: Account<'info, TokenInfo>,
+    /// CHECK: Token Vault's Authority.
     #[account(
         seeds = [
             VAULT_AUTHORITY_STATIC_SEED, 
@@ -545,7 +548,7 @@ pub struct Unlock<'info> {
         ], 
         bump,
     )]
-    pub vault_authority: SystemAccount<'info>,
+    pub vault_authority: UncheckedAccount<'info>,
     #[account(
         init_if_needed,
         payer = signer,
