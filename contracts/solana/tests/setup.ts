@@ -2,6 +2,10 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import type { Buffcat } from "../target/types/buffcat";
 
+export const provider = anchor.AnchorProvider.env();
+anchor.setProvider(provider);
+export const connection = provider.connection;
+
 export const program = anchor.workspace.Buffcat as Program<Buffcat>;
 export const developer = anchor.web3.Keypair.generate();
 export const founder = anchor.web3.Keypair.generate();
@@ -21,3 +25,40 @@ export const [globalInfoPDA, globalInfoBump] =
     [GLOBAL_INFO_STATIC_SEED],
     program.programId
   );
+
+export async function airdropToWallets() {
+  const payerPubkey = provider.wallet.publicKey;
+  const payerAirdropSig = await connection.requestAirdrop(
+    payerPubkey,
+    10 * anchor.web3.LAMPORTS_PER_SOL
+  );
+  await connection.confirmTransaction(payerAirdropSig, "confirmed");
+  const payerBal = await connection.getBalance(payerPubkey);
+  if (payerBal === 0)
+    throw new Error("Airdrop failed: provider wallet has 0 lamports");
+  const userAirdropSig = await connection.requestAirdrop(
+    user.publicKey,
+    10 * anchor.web3.LAMPORTS_PER_SOL
+  );
+  await connection.confirmTransaction(userAirdropSig, "confirmed");
+  const developerAirdropSig = await connection.requestAirdrop(
+    developer.publicKey,
+    10 * anchor.web3.LAMPORTS_PER_SOL
+  );
+  await connection.confirmTransaction(developerAirdropSig, "confirmed");
+  const founderAirdropSig = await connection.requestAirdrop(
+    founder.publicKey,
+    10 * anchor.web3.LAMPORTS_PER_SOL
+  );
+  await connection.confirmTransaction(founderAirdropSig, "confirmed");
+}
+
+export async function deployProgram() {
+  await program.methods
+    .initializeProgram(developer.publicKey, founder.publicKey)
+    .accounts({
+      signer: user.publicKey,
+    })
+    .signers([user])
+    .rpc();
+}

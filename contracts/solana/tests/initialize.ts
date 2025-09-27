@@ -1,27 +1,16 @@
-import * as anchor from "@coral-xyz/anchor";
 import { assert } from "chai";
-import { program, developer, founder, user, globalInfoPDA } from "./setup";
+import {
+  airdropToWallets,
+  program,
+  developer,
+  founder,
+  user,
+  globalInfoPDA,
+} from "./setup";
 
-describe("solana", () => {
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
-  const connection = provider.connection;
-
+describe("initialize", () => {
   before(async () => {
-    const payerPubkey = provider.wallet.publicKey;
-    const payerAirdropSig = await connection.requestAirdrop(
-      payerPubkey,
-      2 * anchor.web3.LAMPORTS_PER_SOL
-    );
-    await connection.confirmTransaction(payerAirdropSig, "confirmed");
-    const payerBal = await connection.getBalance(payerPubkey);
-    if (payerBal === 0)
-      throw new Error("Airdrop failed: provider wallet has 0 lamports");
-    const userAirdropSig = await connection.requestAirdrop(
-      user.publicKey,
-      1 * anchor.web3.LAMPORTS_PER_SOL
-    );
-    await connection.confirmTransaction(userAirdropSig, "confirmed");
+    await airdropToWallets();
   });
 
   it("Program Initialization", async () => {
