@@ -166,7 +166,7 @@ pub mod buffcat {
                         rent: rent.to_account_info(),
                     },
                 ),
-                9, // Decimals
+                token_mint.decimals, // Decimals
                 &derivative_authority.key(), // Mint Authority
                 Some(&derivative_authority.key()), // Freeze Authority (optional)
             )?;
@@ -216,7 +216,7 @@ pub mod buffcat {
                     uses: None, // Typically for NFTs
                     collection_details: None, // Typically for NFTs
                     rule_set: None, // For Programmable NFTs
-                    decimals: Some(9), // Match mint decimals
+                    decimals: Some(token_mint.decimals), // Match mint decimals
                     print_supply: None, // For NFTs
                 },
             ).invoke()?;
