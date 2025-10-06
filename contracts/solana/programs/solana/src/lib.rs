@@ -18,8 +18,8 @@ use anchor_spl::{
 use mpl_token_metadata::{
     ID as metaplex_id,
     accounts::Metadata,
-    instructions::{CreateV1Cpi, CreateV1CpiAccounts, CreateV1InstructionArgs},
-    types::TokenStandard::Fungible
+    instructions::{CreateMetadataAccountV3Cpi, CreateMetadataAccountV3CpiAccounts, CreateMetadataAccountV3InstructionArgs},
+    types::{DataV2}
 };
 
 declare_id!("Dua4QHV8oHr8Mxna9jngcTgACVVpitrAdDK4xVHufjCG");
@@ -118,12 +118,20 @@ pub mod buffcat {
 
             require_keys_eq!(token_metadata.mint, token_mint.key(), BuffcatErrorCodes::MetadataMintMismatch);
 
-            let derivative_name = format!("Liquid {}", token_metadata.name.trim_end()); 
-            let derivative_symbol = format!("li{}", token_metadata.symbol.trim_end());
+            let mut derivative_name = format!("Liquid {}", token_metadata.name.trim_end()); 
+            let mut derivative_symbol = format!("li{}", token_metadata.symbol.trim_end());
+
+            if derivative_name.as_bytes().len() > 32 {
+                derivative_name = String::from_utf8_lossy(&derivative_name.as_bytes()[..32]).to_string();
+            }
+
+            if derivative_symbol.as_bytes().len() > 10 {
+                derivative_symbol = String::from_utf8_lossy(&derivative_symbol.as_bytes()[..10]).to_string();
+            }
             
             let (metadata_address, _bump) = Pubkey::find_program_address(
                 &[
-                    b"metadata",
+                    METADATA_STATIC_SEED,
                     metaplex_id.as_ref(),
                     derivative_mint.key().as_ref(),
                 ],
@@ -136,36 +144,46 @@ pub mod buffcat {
                 BuffcatErrorCodes::InvalidDerivativeMetadataAddress
             );
 
-            CreateV1Cpi::new(
-                &mpl_token_metadata_program,
-                CreateV1CpiAccounts {
-                    authority: &derivative_authority.to_account_info(),
-                    mint: (&derivative_mint.to_account_info(), false),
-                    metadata: &ctx.accounts.derivative_metadata.to_account_info(),
-                    payer: &signer.to_account_info(),
-                    system_program: &system_program.to_account_info(),
-                    sysvar_instructions: &ctx.accounts.sysvar_instructions.to_account_info(),
-                    update_authority: (&derivative_authority.to_account_info(), true),
-                    spl_token_program: Some(&token_program.to_account_info()),
-                    master_edition: None
-                },
-                CreateV1InstructionArgs {
+            let mint_key = token_mint.key();
+            let mpl_key = mpl_token_metadata_program.key();
+            let derivative_mint_bump = ctx.bumps.derivative_mint;
+            let derivative_mint_acc_seeds: &[&[u8]] = &[
+                DERIVATIVE_MINT_STATIC_SEED,
+                mint_key.as_ref(),
+                &[derivative_mint_bump],
+            ];
+            let full_signer_seeds: &[&[&[u8]]] = &[derivative_authority_seeds, derivative_mint_acc_seeds];
+
+            let rent_info = ctx.accounts.rent.to_account_info();
+            let cpi_accounts = CreateMetadataAccountV3CpiAccounts {
+                metadata: &ctx.accounts.derivative_metadata.to_account_info(),
+                mint: &derivative_mint.to_account_info(),
+                mint_authority: &derivative_authority.to_account_info(),
+                payer: &signer.to_account_info(),
+                update_authority: (&derivative_authority.to_account_info(), true),
+                system_program: &system_program.to_account_info(),
+                rent: Some(&rent_info),
+            };
+
+            let cpi_args = CreateMetadataAccountV3InstructionArgs {
+                data: DataV2 {
                     name: derivative_name,
                     symbol: derivative_symbol,
                     uri: token_metadata.uri,
                     seller_fee_basis_points: 0,
                     creators: None,
-                    primary_sale_happened: false,
-                    is_mutable: true,
-                    token_standard: Fungible,
                     collection: None,
                     uses: None,
-                    collection_details: None,
-                    rule_set: None,
-                    decimals: Some(token_mint.decimals),
-                    print_supply: None,
                 },
-            ).invoke_signed(derivative_authority_slice)?;
+                is_mutable: true,
+                collection_details: None,
+            };
+
+            CreateMetadataAccountV3Cpi::new(
+                &mpl_token_metadata_program.to_account_info(),
+                cpi_accounts,
+                cpi_args,
+            ).invoke_signed(full_signer_seeds)?;
 
             token_info.derivative_mint = derivative_mint.key();
             emit!(DerivativeTokenMinted {
@@ -271,7 +289,7 @@ pub mod buffcat {
         );
 
         let fee = calculate_fee(
-            amount, 
+            amount,
             global_info.fee_percentage, 
             global_info.fee_percentage_divider
         );
@@ -447,13 +465,16 @@ pub struct Lock<'info> {
     /// CHECK: Instructions sysvar must be passed in
     #[account(address = anchor_lang::solana_program::sysvar::ID)]
     pub sysvar_instructions: UncheckedAccount<'info>,
+    pub rent: Sysvar<'info, Rent>,
 
     #[account(
+        mut,
         constraint = token_mint.is_initialized
         @ ProgramError::UninitializedAccount
     )]
-    pub token_mint: Account<'info, Mint>,
+    pub token_mint: Box<Account<'info, Mint>>,
     /// CHECK: Metadata for token being locked
+    #[account(mut)]
     pub token_metadata: AccountInfo<'info>,
 
     /// CHECK: Derivative Token's Mint Authority.
@@ -473,11 +494,12 @@ pub struct Lock<'info> {
         seeds = [DERIVATIVE_MINT_STATIC_SEED, token_mint.key().as_ref()],
         bump
     )]
-    pub derivative_mint: Account<'info, Mint>,
+    pub derivative_mint: Box<Account<'info, Mint>>,
     /// CHECK: Metaplex Metadata account PDA, derived from mint and Metaplex program ID
     #[account(
+        mut,
         seeds = [
-            b"metadata",
+            METADATA_STATIC_SEED,
             mpl_token_metadata_program.key().as_ref(),
             derivative_mint.key().as_ref()
         ],
@@ -489,6 +511,7 @@ pub struct Lock<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(
+        mut,
         token::mint = token_mint,
         token::authority = signer,
     )]
@@ -510,7 +533,8 @@ pub struct Lock<'info> {
         bump,
         constraint = token_info.original_mint == token_mint.key()
     )]
-    pub token_info: Account<'info, TokenInfo>,
+    pub token_info: Box<Account<'info, TokenInfo>>,
+
     #[account(
         seeds = [
             VAULT_AUTHORITY_STATIC_SEED, 
@@ -534,16 +558,18 @@ pub struct Lock<'info> {
         seeds = [GLOBAL_INFO_STATIC_SEED], 
         bump,
     )]
-    pub global_info: Account<'info, GlobalInfo>,
+    pub global_info: Box<Account<'info, GlobalInfo>>,
 
     #[account(
+        mut,
+        token::mint = token_mint,
         constraint = founder_ata.owner == global_info.founder_wallet
-        && founder_ata.mint == token_mint.key()
     )]
     pub founder_ata: Account<'info, TokenAccount>,
     #[account(
+        mut,
+        token::mint = token_mint,
         constraint = developer_ata.owner == global_info.developer_wallet
-        && developer_ata.mint == token_mint.key()
     )]
     pub developer_ata: Account<'info, TokenAccount>,
 }

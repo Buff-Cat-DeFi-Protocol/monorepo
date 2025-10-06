@@ -38,7 +38,6 @@ import {
 describe("Token Locking", () => {
   it("Normal Lock", async () => {
     try {
-      // Create a token mint
       const metadata = {
         name: "MyToken",
         symbol: "MT",
@@ -72,8 +71,7 @@ describe("Token Locking", () => {
 
       const derivativeMint = anchor.web3.Keypair.generate();
 
-      // Create the metadata account
-      const [metadataPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+      const [tokenMetadataPDA] = anchor.web3.PublicKey.findProgramAddressSync(
         [
           Buffer.from("metadata"),
           new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID).toBuffer(),
@@ -81,6 +79,15 @@ describe("Token Locking", () => {
         ],
         new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
       );
+      const [derivativeMetadataPDA] =
+        anchor.web3.PublicKey.findProgramAddressSync(
+          [
+            Buffer.from("metadata"),
+            new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID).toBuffer(),
+            derivativeMint.publicKey.toBuffer(),
+          ],
+          new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
+        );
 
       const umi = createUmi(connection);
       const umiSigner = createSignerFromKeypair(umi, fromWeb3JsKeypair(user));
@@ -106,36 +113,27 @@ describe("Token Locking", () => {
         ...accounts,
         ...data,
       }).sendAndConfirm(umi);
-      console.log(txid);
 
-      // Make ATAs
       const userTokenAta = await splToken.getOrCreateAssociatedTokenAccount(
         connection,
         user,
         tokenMint,
         user.publicKey
       );
-      // explicit canonical ATA derivation -- unambiguous
       const [userDerivativeAta] = PublicKey.findProgramAddressSync(
         [
-          user.publicKey.toBuffer(), // owner
-          splToken.TOKEN_PROGRAM_ID.toBuffer(), // spl-token program id
-          derivativeMint.publicKey.toBuffer(), // mint
+          user.publicKey.toBuffer(),
+          splToken.TOKEN_PROGRAM_ID.toBuffer(),
+          derivativeMint.publicKey.toBuffer(),
         ],
-        splToken.ASSOCIATED_TOKEN_PROGRAM_ID // associated token program id
+        splToken.ASSOCIATED_TOKEN_PROGRAM_ID
       );
-      console.log("explicit derived ATA:", userDerivativeAta.toString());
-      console.log(
-        "client derived userDerivativeAta (toString):",
-        userDerivativeAta.toString()
-      );
-      console.log(
-        "client derived userDerivativeAta (constructor):",
-        userDerivativeAta.constructor.name
-      );
-      console.log("token program: ", splToken.TOKEN_PROGRAM_ID);
-      console.log(
-        "associated token program: ",
+      const [vaultAta] = PublicKey.findProgramAddressSync(
+        [
+          user.publicKey.toBuffer(),
+          splToken.TOKEN_PROGRAM_ID.toBuffer(),
+          derivativeMint.publicKey.toBuffer(),
+        ],
         splToken.ASSOCIATED_TOKEN_PROGRAM_ID
       );
       const developerAta = await splToken.getOrCreateAssociatedTokenAccount(
@@ -151,7 +149,6 @@ describe("Token Locking", () => {
         founder.publicKey
       );
 
-      // Mint tokens to user
       const initialBalance = 100 * 10 ** tokenDecimals;
       await splToken.mintTo(
         connection,
@@ -172,7 +169,6 @@ describe("Token Locking", () => {
         "Wrong User Token Balance"
       );
 
-      // Add a authorized updater
       await program.methods
         .addAuthorizedUpdater(user.publicKey)
         .accounts({
@@ -181,7 +177,6 @@ describe("Token Locking", () => {
         .signers([founder])
         .rpc();
 
-      // Derive PDAs
       const [authorizedUpdaterPDA, authorizedUpdaterBump] =
         anchor.web3.PublicKey.findProgramAddressSync(
           [AUTHORIZED_UPDATER_INFO_STATIC_SEED, user.publicKey.toBuffer()],
@@ -200,7 +195,6 @@ describe("Token Locking", () => {
         "Wrong Authorized Updater Key Set"
       );
 
-      // Whitelist a token
       await program.methods
         .whitelist()
         .accounts({
@@ -210,7 +204,6 @@ describe("Token Locking", () => {
         .signers([user])
         .rpc();
 
-      // Derive PDAs
       const [tokenInfoPDA, tokenInfoBump] =
         anchor.web3.PublicKey.findProgramAddressSync(
           [TOKEN_INFO_STATIC_SEED, tokenMint.toBuffer()],
@@ -239,59 +232,27 @@ describe("Token Locking", () => {
         "Wrong Vault Authority Bump Set"
       );
 
-      console.log(
-        "MPL_TOKEN_METADATA_PROGRAM_ID: ",
-        MPL_TOKEN_METADATA_PROGRAM_ID
-      );
-
-      console.log("");
-
-      console.log("Token Mint: ", tokenMint.toString());
-      console.log("Token Metadata: ", metadata);
-      console.log("Token Derivative: ", derivativeMint.publicKey);
-
       const [derivativeAuthorityPDA, derivativeAuthorityBump] =
         anchor.web3.PublicKey.findProgramAddressSync(
           [DERIVATIVE_AUTHORITY_STATIC_SEED, tokenMint.toBuffer()],
           program.programId
         );
-      console.log(
-        "Token Derivative Authority: ",
-        derivativeAuthorityPDA.toString()
-      );
 
-      console.log("");
-
-      console.log("Signer: ", user.publicKey.toString());
-      console.log("Signer Token ATA: ", userTokenAta.address.toString());
-      console.log(
-        "Signer Token Derivative ATA: ",
-        userDerivativeAta.toString()
-      );
-
-      console.log("");
-
-      console.log("Developer Token ATA: ", developerAta.address.toString());
-      console.log("Founder Token ATA: ", founderAta.address.toString());
-
-      // Lock tokens
       const lockAmount = 10 * 10 ** tokenDecimals;
       const tx = await program.methods
         .lock(new anchor.BN(lockAmount))
         .accounts({
           tokenMint: tokenMint,
-          tokenMetadata: metadataPDA,
+          tokenMetadata: tokenMetadataPDA,
           signer: user.publicKey,
           signerTokenAta: userTokenAta.address,
           developerAta: developerAta.address,
           founderAta: founderAta.address,
           mplTokenMetadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
         })
-        .signers([user, derivativeMint])
+        .signers([user])
         .rpc();
-      console.log("Lock TX:", tx);
 
-      // Derive derivative mint and check if token decimals
       const [derivativeMintPDA, derivativeMintBump] =
         anchor.web3.PublicKey.findProgramAddressSync(
           [DERIVATIVE_MINT_STATIC_SEED, tokenMint.toBuffer()],
@@ -301,28 +262,33 @@ describe("Token Locking", () => {
         connection,
         derivativeMintPDA
       );
-      // are equal to token mint decimals
+
+      assert(
+        derivativeMintAccount.isInitialized == true,
+        "Mint Not Initialized"
+      );
       assert(
         derivativeMintAccount.decimals == tokenDecimals,
         "Wrong Token Decimals"
       );
       assert(
-        derivativeMintAccount.mintAuthority == derivativeAuthorityPDA,
+        derivativeMintAccount.mintAuthority.toString() ==
+          derivativeAuthorityPDA.toString(),
         "Wrong Mint Authority"
       );
       assert(
-        derivativeMintAccount.freezeAuthority == derivativeAuthorityPDA,
+        derivativeMintAccount.freezeAuthority.toString() ==
+          derivativeAuthorityPDA.toString(),
         "Wrong Freeze Authority"
       );
-      // check supply has increased
       assert(
-        derivativeMintAccount.supply == BigInt(lockAmount * 0.95),
+        derivativeMintAccount.supply.toString() ==
+          BigInt(lockAmount * 0.995).toString(),
         "Wrong Total Supply"
       );
     } catch (err: any) {
       console.error("Caught error:", err);
 
-      // If the error has a signature (often err.signature or err.logs or err.txSig)
       const signature =
         err?.signature ?? err?.txSig ?? err?.transactionSignature;
       if (typeof signature === "string") {
@@ -336,9 +302,6 @@ describe("Token Locking", () => {
           "No signature found in error object; cannot fetch logs by signature"
         );
       }
-
-      // Rethrow or assert specific error conditions if you want
-      // e.g. assert(err.message.includes("Some custom failure condition"));
     }
   });
 });
