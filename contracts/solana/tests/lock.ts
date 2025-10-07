@@ -13,8 +13,9 @@ import {
   VAULT_AUTHORITY_STATIC_SEED,
   DERIVATIVE_AUTHORITY_STATIC_SEED,
   DERIVATIVE_MINT_STATIC_SEED,
+  METADATA_STATIC_SEED,
 } from "./setup";
-import { Commitment, Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import {
   Collection,
   createMetadataAccountV3,
@@ -23,17 +24,21 @@ import {
   Creator,
   MPL_TOKEN_METADATA_PROGRAM_ID,
   Uses,
+  getDataV2Serializer,
 } from "@metaplex-foundation/mpl-token-metadata";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   createSignerFromKeypair,
   none,
+  RpcAccount,
   signerIdentity,
 } from "@metaplex-foundation/umi";
 import {
   fromWeb3JsKeypair,
   fromWeb3JsPublicKey,
 } from "@metaplex-foundation/umi-web3js-adapters";
+import { deserializeMetadata } from "@metaplex-foundation/mpl-token-metadata";
+import { publicKey } from "@metaplex-foundation/umi-public-keys";
 
 describe("Token Locking", () => {
   it("Normal Lock", async () => {
@@ -43,7 +48,7 @@ describe("Token Locking", () => {
         symbol: "MT",
         uri: "https://example.com/metadata.json",
       };
-      const tokenDecimals = 9;
+      const tokenDecimals = 6;
 
       const tokenMint = await splToken.createMint(
         connection,
@@ -69,7 +74,10 @@ describe("Token Locking", () => {
       );
       assert(tokenAccount.supply == BigInt(0), "Wrong Token Supply");
 
-      const derivativeMint = anchor.web3.Keypair.generate();
+      const [derivativeMint] = anchor.web3.PublicKey.findProgramAddressSync(
+        [DERIVATIVE_MINT_STATIC_SEED, tokenMint.toBuffer()],
+        program.programId
+      );
 
       const [tokenMetadataPDA] = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -79,12 +87,13 @@ describe("Token Locking", () => {
         ],
         new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
       );
+
       const [derivativeMetadataPDA] =
         anchor.web3.PublicKey.findProgramAddressSync(
           [
-            Buffer.from("metadata"),
+            METADATA_STATIC_SEED,
             new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID).toBuffer(),
-            derivativeMint.publicKey.toBuffer(),
+            derivativeMint.toBuffer(),
           ],
           new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
         );
@@ -124,7 +133,7 @@ describe("Token Locking", () => {
         [
           user.publicKey.toBuffer(),
           splToken.TOKEN_PROGRAM_ID.toBuffer(),
-          derivativeMint.publicKey.toBuffer(),
+          derivativeMint.toBuffer(),
         ],
         splToken.ASSOCIATED_TOKEN_PROGRAM_ID
       );
@@ -132,17 +141,17 @@ describe("Token Locking", () => {
         [
           user.publicKey.toBuffer(),
           splToken.TOKEN_PROGRAM_ID.toBuffer(),
-          derivativeMint.publicKey.toBuffer(),
+          derivativeMint.toBuffer(),
         ],
         splToken.ASSOCIATED_TOKEN_PROGRAM_ID
       );
-      const developerAta = await splToken.getOrCreateAssociatedTokenAccount(
+      let developerAta = await splToken.getOrCreateAssociatedTokenAccount(
         connection,
         developer,
         tokenMint,
         developer.publicKey
       );
-      const founderAta = await splToken.getOrCreateAssociatedTokenAccount(
+      let founderAta = await splToken.getOrCreateAssociatedTokenAccount(
         connection,
         founder,
         tokenMint,
@@ -285,6 +294,54 @@ describe("Token Locking", () => {
         derivativeMintAccount.supply.toString() ==
           BigInt(lockAmount * 0.995).toString(),
         "Wrong Total Supply"
+      );
+
+      const feeShare = (lockAmount * 0.005) / 2;
+
+      developerAta = await splToken.getOrCreateAssociatedTokenAccount(
+        connection,
+        developer,
+        tokenMint,
+        developer.publicKey
+      );
+      assert(
+        developerAta.amount == BigInt(feeShare),
+        "Wrong Developer ATA Balance"
+      );
+
+      founderAta = await splToken.getOrCreateAssociatedTokenAccount(
+        connection,
+        founder,
+        tokenMint,
+        founder.publicKey
+      );
+      assert(
+        founderAta.amount == BigInt(feeShare),
+        "Wrong Developer ATA Balance"
+      );
+
+      const derivativeMetadataAccount = await umi.rpc.getAccount(
+        fromWeb3JsPublicKey(derivativeMetadataPDA)
+      );
+      const datav2 = getDataV2Serializer();
+      const derivativeMetadata = deserializeMetadata(
+        derivativeMetadataAccount as RpcAccount
+      );
+
+      const derivativeName: string = "Liquid " + metadata.name;
+      const derivativeSymbol: string = "li" + metadata.symbol;
+
+      assert(
+        derivativeMetadata.name.toString() == derivativeName,
+        "Wrong Derivative Name"
+      );
+      assert(
+        derivativeMetadata.symbol.toString() == derivativeSymbol,
+        "Wrong Derivative Symbol"
+      );
+      assert(
+        derivativeMetadata.uri.toString() == metadata.uri,
+        "Wrong Derivative URI"
       );
     } catch (err: any) {
       console.error("Caught error:", err);

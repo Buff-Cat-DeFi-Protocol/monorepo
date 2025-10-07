@@ -145,7 +145,6 @@ pub mod buffcat {
             );
 
             let mint_key = token_mint.key();
-            let mpl_key = mpl_token_metadata_program.key();
             let derivative_mint_bump = ctx.bumps.derivative_mint;
             let derivative_mint_acc_seeds: &[&[u8]] = &[
                 DERIVATIVE_MINT_STATIC_SEED,
