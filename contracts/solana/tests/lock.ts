@@ -168,7 +168,7 @@ describe("Token Locking", () => {
         initialBalance
       );
 
-      const userTokenAtaAccount = await splToken.getAccount(
+      let userTokenAtaAccount = await splToken.getAccount(
         connection,
         userTokenAta.address
       );
@@ -274,26 +274,26 @@ describe("Token Locking", () => {
 
       assert(
         derivativeMintAccount.isInitialized == true,
-        "Mint Not Initialized"
+        "Derivative Mint Not Initialized"
       );
       assert(
         derivativeMintAccount.decimals == tokenDecimals,
-        "Wrong Token Decimals"
+        "Wrong Derivative Token Decimals"
       );
       assert(
         derivativeMintAccount.mintAuthority.toString() ==
           derivativeAuthorityPDA.toString(),
-        "Wrong Mint Authority"
+        "Wrong Derivative Mint Authority"
       );
       assert(
         derivativeMintAccount.freezeAuthority.toString() ==
           derivativeAuthorityPDA.toString(),
-        "Wrong Freeze Authority"
+        "Wrong Derivative Freeze Authority"
       );
       assert(
         derivativeMintAccount.supply.toString() ==
           BigInt(lockAmount * 0.995).toString(),
-        "Wrong Total Supply"
+        "Wrong Derivative Total Supply"
       );
 
       const feeShare = (lockAmount * 0.005) / 2;
@@ -342,6 +342,52 @@ describe("Token Locking", () => {
       assert(
         derivativeMetadata.uri.toString() == metadata.uri,
         "Wrong Derivative URI"
+      );
+
+      const tokenMintAccount = await splToken.getMint(connection, tokenMint);
+
+      assert(
+        tokenMintAccount.isInitialized == true,
+        "Token Mint Not Initialized"
+      );
+      assert(
+        tokenMintAccount.decimals == tokenDecimals,
+        "Wrong Token Decimals"
+      );
+      assert(
+        tokenMintAccount.mintAuthority.toString() == user.publicKey.toString(),
+        "Wrong Token Mint Authority"
+      );
+      assert(
+        tokenMintAccount.freezeAuthority.toString() ==
+          user.publicKey.toString(),
+        "Wrong Token Freeze Authority"
+      );
+      assert(
+        tokenMintAccount.supply.toString() == BigInt(initialBalance).toString(),
+        "Wrong Token Total Supply"
+      );
+
+      userTokenAtaAccount = await splToken.getAccount(
+        connection,
+        userTokenAta.address
+      );
+      assert(
+        userTokenAtaAccount.amount == BigInt(initialBalance - lockAmount),
+        "Wrong User ATA Balance 2"
+      );
+
+      const userDerivativeAtaAccount = await splToken.getAccount(
+        connection,
+        userDerivativeAta
+      );
+      assert(
+        userDerivativeAtaAccount.mint.toString() == derivativeMint.toString(),
+        "Wrong User Derivative ATA Mint"
+      );
+      assert(
+        userDerivativeAtaAccount.amount == BigInt(lockAmount * 0.995),
+        "Wrong User Derivative ATA Balance 2"
       );
     } catch (err: any) {
       console.error("Caught error:", err);

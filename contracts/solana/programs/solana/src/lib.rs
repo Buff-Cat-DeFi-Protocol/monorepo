@@ -548,7 +548,6 @@ pub struct Lock<'info> {
         payer = signer,
         associated_token::mint = token_mint,
         associated_token::authority = vault_authority,
-        associated_token::token_program = token_program,
     )]
     pub vault_ata: Account<'info, TokenAccount>,
 
