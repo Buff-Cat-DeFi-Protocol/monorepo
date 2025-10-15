@@ -1,29 +1,23 @@
 import { assert } from "chai";
-import {
-  airdropToWallets,
-  program,
-  developer,
-  founder,
-  user,
-  globalInfoPDA,
-} from "./setup";
+import { setup } from "./setup";
 
 describe("Program Initialization", () => {
   before(async () => {
-    await airdropToWallets();
+    await setup.initialize();
   });
 
   it("Normal Initialization", async () => {
-    const tx = await program.methods
-      .initializeProgram(developer.publicKey, founder.publicKey)
+    await setup.program.methods
+      .initializeProgram(setup.developer.publicKey, setup.founder.publicKey)
       .accounts({
-        signer: user.publicKey,
+        signer: setup.user.publicKey,
       })
-      .signers([user])
+      .signers([setup.user])
       .rpc();
 
-    const globalInfoAccount =
-      await program.account.globalInfo.fetch(globalInfoPDA);
+    const globalInfoAccount = await setup.program.account.globalInfo.fetch(
+      setup.globalInfoPDA
+    );
 
     const developerWalletStr = globalInfoAccount.developerWallet.toBase58();
     const founderWalletStr = globalInfoAccount.founderWallet.toBase58();
@@ -34,11 +28,11 @@ describe("Program Initialization", () => {
     const minLockValueNum = globalInfoAccount.minLockValue;
 
     assert(
-      founder.publicKey.toString() == founderWalletStr,
+      setup.founder.publicKey.toString() == founderWalletStr,
       "Wrong Founder Address Set"
     );
     assert(
-      developer.publicKey.toString() == developerWalletStr,
+      setup.developer.publicKey.toString() == developerWalletStr,
       "Wrong Developer Address Set"
     );
     assert(feePercentageNum == 5, "Wrong feePercentage Set");
