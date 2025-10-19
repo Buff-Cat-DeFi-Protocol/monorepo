@@ -47,6 +47,7 @@ pub mod buffcat {
         global_info.founder_wallet = founder_wallet;
         global_info.fee_percentage = 5;
         global_info.fee_percentage_divider = 1000;
+        global_info.min_fee = 10;
         global_info.developer_fee_share = 50;
         global_info.founder_fee_share = 50;
         global_info.min_lock_value = 400;
@@ -221,8 +222,9 @@ pub mod buffcat {
         let fee = calculate_fee(
             amount, 
             global_info.fee_percentage, 
-            global_info.fee_percentage_divider
-        );
+            global_info.fee_percentage_divider,
+            global_info.min_fee
+        )?;
         let deducted_amount = amount - fee;
         
         distribute_fee(
@@ -301,8 +303,9 @@ pub mod buffcat {
         let fee = calculate_fee(
             amount,
             global_info.fee_percentage, 
-            global_info.fee_percentage_divider
-        );
+            global_info.fee_percentage_divider,
+            global_info.min_fee
+        )?;
         let deducted_amount = amount - fee;
 
         let clock = Clock::get()?;
@@ -392,10 +395,37 @@ pub mod buffcat {
 pub fn calculate_fee(
     amount: u64,
     fee_percentage: u64,
-    fee_percentage_divider: u64
-) -> u64 {
-    return (amount * fee_percentage) / fee_percentage_divider;
+    fee_percentage_divider: u64,
+    min_fee: u64
+) -> Result<u64> {
+    let amount128 = amount as u128;
+    let fee_percentage128 = fee_percentage as u128;
+    let fee_percentage_divider128 = fee_percentage_divider as u128;
+
+    let numer = amount128
+        .checked_mul(fee_percentage128)
+        .ok_or(BuffcatErrorCodes::Overflow)?;
+    let half = fee_percentage_divider128
+        .checked_div(2)
+        .ok_or(BuffcatErrorCodes::Overflow)?;
+    let summed = numer
+        .checked_add(half)
+        .ok_or(BuffcatErrorCodes::Overflow)?;
+    let rounded = summed / fee_percentage_divider128;
+
+    // if rounding produced zero use min_fee, otherwise try to convert to u64 (fail if too big)
+    let fee_u64 = if rounded == 0 {
+        min_fee
+    } else {
+        u64::try_from(rounded).map_err(|_| BuffcatErrorCodes::Overflow)?
+    };
+
+    // final sanity: ensure fee leaves something to lock
+    require!(fee_u64 < amount, BuffcatErrorCodes::InsufficientAfterFee);
+
+    Ok(fee_u64)
 }
+
 
 pub fn distribute_fee<'info>(
     token_mint: &Account<'info, Mint>,
@@ -792,13 +822,14 @@ pub struct GlobalInfo {
     pub founder_wallet: Pubkey, // 32
     pub fee_percentage: u64, // 64 / 8 = 8
     pub fee_percentage_divider: u64, // 64 / 8 = 8
+    pub min_fee: u64, // 64 / 8 = 8
     pub developer_fee_share: u64, // 64 / 8 = 8
     pub founder_fee_share: u64, // 64 / 8 = 8
     pub min_lock_value: u16, // 16 / 8 = 2
 }
 
 impl GlobalInfo {
-    pub const LEN: usize = 1 + 32 + 32 + 8 + 8 + 8 + 8 + 2;
+    pub const LEN: usize = 1 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 2;
 }
 
 #[account]
@@ -856,6 +887,10 @@ pub enum BuffcatErrorCodes {
     InvalidDerivativeMetadataAddress,
     #[msg("Invalid token metadata address")]
     InvalidTokenMetadataAddress,
+    #[msg("Fee >= amount (insufficient after fee)")]
+    InsufficientAfterFee,
+    #[msg("Overflow")]
+    Overflow,
 }
 
 // Events
