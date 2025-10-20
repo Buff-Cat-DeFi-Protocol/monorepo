@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.22;
 
-import {console} from "forge-std/Console.sol";
+import {console} from "forge-std/console.sol";
 import {TestSetUp} from "./TestSetUp.sol";
 import {IBuffcat} from "../src/interfaces/IBuffcat.sol";
 import {BuffcatUpgradeable} from "../src/Buffcat.sol";

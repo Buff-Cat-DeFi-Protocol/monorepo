@@ -6,7 +6,7 @@ import { DerivativeToken } from "../src/token/DerivativeToken.sol";
 import { IToken } from "../src/interfaces/IToken.sol";
 import { ERC1967Proxy } from "@openzeppelin-contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {Clones} from "@openzeppelin-contracts/proxy/Clones.sol";
-import {console} from "forge-std/Console.sol";
+import {console} from "forge-std/console.sol";
 
 contract TestSetUp is Test {
     DerivativeToken public dt;

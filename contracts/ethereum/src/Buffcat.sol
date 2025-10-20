@@ -5,7 +5,7 @@ import {IBuffcat} from "./interfaces/IBuffcat.sol";
 import {SafeERC20} from "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import {OwnableUpgradeable} from "@openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {ReentrancyGuardUpgradeable} from "@openzeppelin-contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {ReentrancyGuard} from "@openzeppelin-contracts/utils/ReentrancyGuard.sol";
 import {PausableUpgradeable} from "@openzeppelin-contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {Initializable} from "@openzeppelin-contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Clones} from "@openzeppelin-contracts/proxy/Clones.sol";
@@ -18,12 +18,9 @@ contract BuffcatUpgradeable is
     OwnableUpgradeable,
     UUPSUpgradeable,
     PausableUpgradeable,
-    ReentrancyGuardUpgradeable
+    ReentrancyGuard
 {
     using SafeERC20 for IToken;
-
-    // Constants :-
-    uint256 public MIN_LOCK_VALUE;
 
     // Variables :-
     address public derivativeImplementation;
@@ -36,6 +33,8 @@ contract BuffcatUpgradeable is
 
     uint256 public feePercentage;
     uint256 public feePercentageDivider;
+    uint256 public minFeeForDistribution;
+    uint256 public minFee;
 
     mapping(address => bool) public whitelistedTokens;
     mapping(address => address) public tokenDerivatives;
@@ -59,8 +58,6 @@ contract BuffcatUpgradeable is
         address _founder
     ) public initializer {
         __Ownable_init(msg.sender);
-        __UUPSUpgradeable_init();
-        __ReentrancyGuard_init();
         __Pausable_init();
 
         developer = _developer;
@@ -68,16 +65,16 @@ contract BuffcatUpgradeable is
         developerShare = 50;
         founderShare = 50;
         derivativeImplementation = address(new DerivativeToken());
-        MIN_LOCK_VALUE = 400;
         feePercentage = 5;
         feePercentageDivider = 1000;
+        minFeeForDistribution = 2;
+        minFee = 10;
     }
 
     // External -
     function lock(address _token, uint256 _amount) external nonReentrant whenNotPaused {
         if (_token == address(0)) revert ZeroAddress();
         if (_amount == 0) revert ZeroAmountValue();
-        if (_amount < MIN_LOCK_VALUE) revert InvalidAmount();
         if (!whitelistedTokens[_token]) revert NotWhitelisted();
 
         uint256 allowance = IToken(_token).allowance(msg.sender, address(this));
@@ -114,7 +111,6 @@ contract BuffcatUpgradeable is
     function unlock(address _token, uint256 _amount) external nonReentrant whenNotPaused {
         if (_token == address(0)) revert ZeroAddress();
         if (_amount == 0) revert ZeroAmountValue();
-        if (_amount < MIN_LOCK_VALUE) revert InvalidAmount();
         if (!whitelistedTokens[_token]) revert NotWhitelisted();
 
         address derivativeAddress = tokenDerivatives[_token];
@@ -132,7 +128,8 @@ contract BuffcatUpgradeable is
         distributeFee(_token, fee);
 
         IToken(derivativeAddress).burn(_amount);
-        IToken(_token).transfer(msg.sender, deductedAmount);
+        bool success  = IToken(_token).transfer(msg.sender, deductedAmount);
+        if (!success) revert TokenTransferFailed();
         emit AssetsUnlocked(msg.sender, _token, _amount, block.timestamp);
     }
 
@@ -158,7 +155,10 @@ contract BuffcatUpgradeable is
     }
 
     function calculateFee(uint256 _amount) internal view returns (uint256) {
-        return (_amount * feePercentage) / feePercentageDivider;
+        uint256 fee = (_amount * feePercentage) / feePercentageDivider;
+        if (fee < minFeeForDistribution) fee = minFee;
+        if (fee > _amount) revert InvalidAmount();
+        return fee;
     }
 
     // Private -

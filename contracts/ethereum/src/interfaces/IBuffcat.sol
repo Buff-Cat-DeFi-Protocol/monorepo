@@ -47,6 +47,7 @@ interface IBuffcat {
     error NotWhitelisted();
     error InsufficientAllowance();
     error InsufficientBalance();
+    error TokenTransferFailed();
 
     // Functions :-
     function lock(address _token, uint256 _amount) external;

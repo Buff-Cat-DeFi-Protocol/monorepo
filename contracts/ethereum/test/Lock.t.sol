@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.22;
 
-import {console} from "forge-std/Console.sol";
+import {console} from "forge-std/console.sol";
 import {TestSetUp} from "./TestSetUp.sol";
 import {IBuffcat} from "../src/interfaces/IBuffcat.sol";
 import {BuffcatUpgradeable} from "../src/Buffcat.sol";
@@ -48,10 +48,6 @@ contract LockTests is TestSetUp {
 
         uint256 lockAmount = 0;
         vm.expectRevert(IBuffcat.ZeroAmountValue.selector);
-        buffcat.lock(address(token1), lockAmount);
-
-        lockAmount = 399;
-        vm.expectRevert(IBuffcat.InvalidAmount.selector);
         buffcat.lock(address(token1), lockAmount);
 
         vm.stopPrank();

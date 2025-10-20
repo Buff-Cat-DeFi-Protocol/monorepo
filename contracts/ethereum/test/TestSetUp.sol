@@ -18,7 +18,17 @@ contract TestSetUp is Test {
     Token public token2;
     Token public token3;
 
+    uint256 public feePercentage;
+    uint256 public feePercentageDivider;
+    uint256 public minFeeForDistribution;
+    uint256 public minFee;
+
     function setUp() public {
+        feePercentage = 5;
+        feePercentageDivider = 1000;
+        minFeeForDistribution = 2;
+        minFee = 10;
+
         vm.startPrank(owner);
 
         buffcat = new BuffcatUpgradeable();
@@ -49,7 +59,9 @@ contract TestSetUp is Test {
         vm.stopPrank();
     }
 
-    function calculateFee(uint256 _amount) public pure returns (uint256) {
-        return (_amount * 5) / 1000;
+    function calculateFee(uint256 _amount) internal view returns (uint256) {
+        uint256 fee = (_amount * feePercentage) / feePercentageDivider;
+        if (fee < minFeeForDistribution) fee = minFee;
+        return fee;
     }
 }
