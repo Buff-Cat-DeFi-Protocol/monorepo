@@ -19,23 +19,33 @@ export default function Dashboard() {
   if (isAllTokensListLoading) return <DashboardSkeleton />;
 
   return (
-    <div className="mx-auto mt-6 mb-12 w-120 h-119 rounded-2xl p-4 border border-white/30">
-      <Tabs defaultValue="Lock" onValueChange={(value) => setActiveTab(value)}>
-        <TabsList className="w-full bg-transparent flex justify-between">
+    <div className="mx-auto mt-6 mb-12 w-120 min-h-119 rounded-2xl p-4 
+    bg-custom-root-bg border-2 border-custom-primary-color custom-box-shadow">
+      <Tabs
+      defaultValue="Lock" 
+      onValueChange={(value) => setActiveTab(value)}
+      >
+        <TabsList className="w-full bg-transparent flex justify-between border-b-2 border-gray-200 rounded-none">
           <div>
             <TabsTrigger
               key="Lock"
               value="Lock"
-              className={`cursor-pointer data-[state=active]:bg-transparent text-sm leading-none font-medium
-                data-[state=active]:text-custom-primary-text data-[state=inactive]:text-custom-muted-text`}
+              className={`bg-transparent border-0 shadow-none data-[state=active]:bg-transparent cursor-pointer
+            data-[state=active]:shadow-none text-base font-semibold text-gray-400 data-[state=active]:text-black relative
+            rounded-none data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-[-4px] 
+            data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-black 
+            transition-colors hover:text-gray-600`}
             >
               Lock
             </TabsTrigger>
             <TabsTrigger
               key="Unlock"
               value="Unlock"
-              className={`cursor-pointer data-[state=active]:bg-transparent text-sm leading-none font-medium
-                data-[state=active]:text-custom-primary-text data-[state=inactive]:text-custom-muted-text`}
+              className={`bg-transparent border-0 shadow-none data-[state=active]:bg-transparent cursor-pointer
+            data-[state=active]:shadow-none text-base font-semibold text-gray-400 data-[state=active]:text-black relative
+            rounded-none data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-[-4px] 
+            data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-black 
+            transition-colors hover:text-gray-600`}
             >
               Unlock
             </TabsTrigger>

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="container mx-auto min-h-screen flex items-center">
+    <div className="container mx-auto min-h-screen flex items-center z-30">
       <div className="px-80">
         Buffcat is a locking protocol where users can lock their tokens ($TKN)
         and get derivate tokens in in return ($bTKN). Users can use their

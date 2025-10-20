@@ -62,7 +62,7 @@ export default function UnlockPanel({
 
   return (
     <div className="flex flex-col items-center">
-      <div className="w-112 h-30 rounded-2xl px-4 py-2">
+      <div className="w-112 rounded-2xl px-4 py-2">
         <div className="text-xs text-custom-muted-text">You Unlock</div>
         <div className="flex justify-between">
           {!fetchedTokens ? (
@@ -116,7 +116,7 @@ export default function UnlockPanel({
               inputMode="decimal"
               placeholder="1.00"
               aria-label="amount"
-              className="h-9 my-2 !text-3xl font-bold flex items-center
+              className="h-9 my-2 !text-3xl font-bold flex items-center shadow-none
               border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-transparent
               text-right placeholder:text-custom-primary-text p-0
               [&::-webkit-outer-spin-button]:appearance-none 
@@ -138,12 +138,12 @@ export default function UnlockPanel({
           </div>
         </div>
       </div>
-      <Collapsible className="border border-custom-card-border bg-custom-card-background mt-2 rounded-2xl">
+      <Collapsible className="w-112 mt-2 rounded-2xl border border-custom-primary-color/30">
         <CollapsibleTrigger
           onClick={() => {
             setIsCollapsibleOpen((val) => !val);
           }}
-          className="w-112 py-2 px-4 flex justify-between cursor-pointer"
+          className="w-full py-2 px-4 flex justify-between cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -235,7 +235,8 @@ export default function UnlockPanel({
           </div>
         </CollapsibleContent>
       </Collapsible>
-      <Card className="w-112 rounded-2xl border border-custom-card-border bg-custom-card-background text-custom-primary-text mt-2">
+      <Card className="w-112 rounded-2xl text-custom-primary-text mt-2 bg-transparent shadow-none
+      border border-custom-primary-color/30">
         <CardContent className="px-4">
           {
             <div>

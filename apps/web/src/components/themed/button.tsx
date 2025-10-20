@@ -11,11 +11,10 @@ interface ThemedButtonProps {
 const styles: {
   [key in Style]: string;
 } = {
-  primary: `bg-custom-primary-color text-custom-primary-text
-  hover:bg-custom-primary-color hover:text-custom-primary-text
+  primary: `bg-custom-primary-color text-custom-tertiary-text
+  hover:bg-custom-primary-color hover:text-custom-tertiary-text
   border-none hover:border-none`,
-  secondary: `bg-custom-card-alt border border-custom-card-border
-  hover:bg-custom-card-alt hover:text-custom-primary-text hover:border-custom-card-border`,
+  secondary: `bg-custom-card-alt hover:bg-custom-card-alt hover:text-custom-primary-text`,
 };
 
 export default function ThemedButton({

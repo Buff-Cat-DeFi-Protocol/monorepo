@@ -3,26 +3,39 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.custom-box-shadow {
+  box-shadow: 8px 8px 0px #000000;
+}
+
+
 @theme {
-  --color-custom-root-bg: hsl(220, 15%, 8%);
-  --color-custom-root-text: hsl(220, 15%, 95%);
+  --color-custom-root-bg: #FDFFFC;
+  --color-custom-root-text: #000000;
 
-  --color-custom-primary-color: hsl(20, 100%, 61%);
-  --color-custom-secondary-color: hsl(220, 15%, 95%);
-  --color-custom-tertiary-color: hsl(220, 15%, 8%);
+  --color-custom-primary-color: #000000;
+  --color-custom-secondary-color: #000000;
+  --color-custom-tertiary-color: #FDFFFC;
 
-  --color-custom-primary-text: hsl(220, 15%, 95%);
-  --color-custom-secondary-text: hsl(20, 100%, 61%);
-  --color-custom-tertiary-text: hsl(220, 15%, 8%);
+  --color-crypto-blue: #00d4ff;
+  --color-crypto-blue-dark: #00b8e6;
+  --color-deep-blue: #0066ff;
+
+  --color-custom-primary-text: #000000;
+  --color-custom-secondary-text: #E71D36;
+  --color-custom-tertiary-text: #FDFFFC;
   --color-custom-muted-text: hsl(220, 10%, 60%);
 
   --color-custom-card-background: hsl(220, 15%, 12%);
-  --color-custom-card-alt: hsl(220, 15%, 18%);
-  --color-custom-card-border: hsl(220, 15%, 25%);
+  --color-custom-card-alt: #00d4ff;
+  --color-custom-card-border: #000000;
 }
 
 body {
   font-family: var(--font-custom-font), sans-serif;
+  opacity: 0.8;
+  background-image:  radial-gradient(#000000 0.5px, transparent 0.5px), radial-gradient(#000000 0.5px, #FDFFFC 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0,10px 10px;
 }
 
 @theme inline {
