@@ -217,10 +217,10 @@ pub mod buffcat {
 
         let fee = calculate_fee(
             amount, 
-            global_info.fee_percentage, 
-            global_info.fee_percentage_divider,
-            global_info.min_fee_for_distribution,
-            global_info.min_fee
+            global_info.fee_percentage as u64, 
+            global_info.fee_percentage_divider as u64,
+            global_info.min_fee_for_distribution as u64,
+            global_info.min_fee as u64
         )?;
         let deducted_amount = amount - fee;
         
@@ -295,10 +295,10 @@ pub mod buffcat {
 
         let fee = calculate_fee(
             amount,
-            global_info.fee_percentage, 
-            global_info.fee_percentage_divider,
-            global_info.min_fee_for_distribution,
-            global_info.min_fee
+            global_info.fee_percentage as u64, 
+            global_info.fee_percentage_divider as u64,
+            global_info.min_fee_for_distribution as u64,
+            global_info.min_fee as u64
         )?;
         let deducted_amount = amount - fee;
 
@@ -818,16 +818,16 @@ pub struct GlobalInfo {
     pub is_initialized: bool, // 1
     pub developer_wallet: Pubkey, // 32
     pub founder_wallet: Pubkey, // 32
-    pub fee_percentage: u64, // 64 / 8 = 8
-    pub fee_percentage_divider: u64, // 64 / 8 = 8
-    pub min_fee_for_distribution: u64, // 64 / 8 = 8
-    pub min_fee: u64, // 64 / 8 = 8
-    pub developer_fee_share: u64, // 64 / 8 = 8
-    pub founder_fee_share: u64, // 64 / 8 = 8
+    pub fee_percentage: u8, // 8 / 8 = 1
+    pub fee_percentage_divider: u16, // 16 / 8 = 2
+    pub min_fee_for_distribution: u8, // 8 / 8 = 1
+    pub min_fee: u8, // 8 / 8 = 1
+    pub developer_fee_share: u8, // 8 / 8 = 1
+    pub founder_fee_share: u8, // 8 / 8 = 1
 }
 
 impl GlobalInfo {
-    pub const LEN: usize = 1 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 8 + 2;
+    pub const LEN: usize = 1 + 32 + 32 + 1 + 2 + 1 + 1 + 1 + 1;
 }
 
 #[account]

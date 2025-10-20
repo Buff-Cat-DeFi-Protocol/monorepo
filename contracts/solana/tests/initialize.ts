@@ -21,13 +21,12 @@ describe("Program Initialization", () => {
 
     const developerWalletStr = globalInfoAccount.developerWallet.toBase58();
     const founderWalletStr = globalInfoAccount.founderWallet.toBase58();
-    const feePercentageNum = globalInfoAccount.feePercentage.toNumber();
-    const feeDividerNum = globalInfoAccount.feePercentageDivider.toNumber();
-    const developerFeeShareNum = globalInfoAccount.developerFeeShare.toNumber();
-    const founderFeeShareNum = globalInfoAccount.founderFeeShare.toNumber();
-    const minFee = globalInfoAccount.minFee.toNumber();
-    const minFeeForDistribution =
-      globalInfoAccount.minFeeForDistribution.toNumber();
+    const feePercentageNum = globalInfoAccount.feePercentage;
+    const feeDividerNum = globalInfoAccount.feePercentageDivider;
+    const developerFeeShareNum = globalInfoAccount.developerFeeShare;
+    const founderFeeShareNum = globalInfoAccount.founderFeeShare;
+    const minFee = globalInfoAccount.minFee;
+    const minFeeForDistribution = globalInfoAccount.minFeeForDistribution;
 
     assert(
       setup.founder.publicKey.toString() == founderWalletStr,
