@@ -27,7 +27,7 @@ contract TestSetUp is Test {
         feePercentage = 5;
         feePercentageDivider = 1000;
         minFeeForDistribution = 2;
-        minFee = 10;
+        minFee = 2;
 
         vm.startPrank(owner);
 

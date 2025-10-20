@@ -41,7 +41,7 @@ interface IBuffcat {
     error NotAuthorized();
     error ZeroAmountValue();
     error ZeroAddress();
-    error InvalidAmount();
+    error AmountInsufficientAfterFee();
     error NoDerivativeDeployed();
     error InvalidDerivativeAddress();
     error NotWhitelisted();

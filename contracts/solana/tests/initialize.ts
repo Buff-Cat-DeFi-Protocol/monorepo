@@ -25,7 +25,9 @@ describe("Program Initialization", () => {
     const feeDividerNum = globalInfoAccount.feePercentageDivider.toNumber();
     const developerFeeShareNum = globalInfoAccount.developerFeeShare.toNumber();
     const founderFeeShareNum = globalInfoAccount.founderFeeShare.toNumber();
-    const minLockValueNum = globalInfoAccount.minLockValue;
+    const minFee = globalInfoAccount.minFee.toNumber();
+    const minFeeForDistribution =
+      globalInfoAccount.minFeeForDistribution.toNumber();
 
     assert(
       setup.founder.publicKey.toString() == founderWalletStr,
@@ -39,6 +41,7 @@ describe("Program Initialization", () => {
     assert(feeDividerNum == 1000, "Wrong feePercentageDivider Set");
     assert(developerFeeShareNum == 50, "Wrong developerFeeShare Set");
     assert(founderFeeShareNum == 50, "Wrong founderFeeShare Set");
-    assert(minLockValueNum == 400, "Wrong minLockValue Set");
+    assert(minFee == 2, "Wrong minFee Set");
+    assert(minFeeForDistribution == 2, "Wrong minFeeForDistribution Set");
   });
 });

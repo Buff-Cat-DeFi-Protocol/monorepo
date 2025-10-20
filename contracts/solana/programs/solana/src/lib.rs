@@ -47,10 +47,10 @@ pub mod buffcat {
         global_info.founder_wallet = founder_wallet;
         global_info.fee_percentage = 5;
         global_info.fee_percentage_divider = 1000;
-        global_info.min_fee = 10;
+        global_info.min_fee_for_distribution = 2;
+        global_info.min_fee = 2;
         global_info.developer_fee_share = 50;
         global_info.founder_fee_share = 50;
-        global_info.min_lock_value = 400;
         Ok(())
     }
 
@@ -88,10 +88,6 @@ pub mod buffcat {
         require!(
             amount != 0, 
             BuffcatErrorCodes::ZeroAmountValue
-        );
-        require!(
-            amount >= global_info.min_lock_value as u64, 
-            BuffcatErrorCodes::InvalidAmount
         );
         require!(
             token_info.whitelisted, 
@@ -223,6 +219,7 @@ pub mod buffcat {
             amount, 
             global_info.fee_percentage, 
             global_info.fee_percentage_divider,
+            global_info.min_fee_for_distribution,
             global_info.min_fee
         )?;
         let deducted_amount = amount - fee;
@@ -288,10 +285,6 @@ pub mod buffcat {
             BuffcatErrorCodes::ZeroAmountValue
         );
         require!(
-            amount >= global_info.min_lock_value as u64, 
-            BuffcatErrorCodes::InvalidAmount
-        );
-        require!(
             token_info.whitelisted, 
             BuffcatErrorCodes::NotWhitelisted
         );
@@ -304,6 +297,7 @@ pub mod buffcat {
             amount,
             global_info.fee_percentage, 
             global_info.fee_percentage_divider,
+            global_info.min_fee_for_distribution,
             global_info.min_fee
         )?;
         let deducted_amount = amount - fee;
@@ -397,11 +391,13 @@ pub fn calculate_fee(
     amount: u64,
     fee_percentage: u64,
     fee_percentage_divider: u64,
+    min_fee_for_distribution: u64,
     min_fee: u64
 ) -> Result<u64> {
     let amount128 = amount as u128;
     let fee_percentage128 = fee_percentage as u128;
     let fee_percentage_divider128 = fee_percentage_divider as u128;
+    let min_fee_for_distribution128 = min_fee_for_distribution as u128;
 
     let numer = amount128
         .checked_mul(fee_percentage128)
@@ -415,14 +411,14 @@ pub fn calculate_fee(
     let rounded = summed / fee_percentage_divider128;
 
     // if rounding produced zero use min_fee, otherwise try to convert to u64 (fail if too big)
-    let fee_u64 = if rounded == 0 {
+    let fee_u64 = if rounded < min_fee_for_distribution128 {
         min_fee
     } else {
         u64::try_from(rounded).map_err(|_| BuffcatErrorCodes::Overflow)?
     };
 
     // final sanity: ensure fee leaves something to lock
-    require!(fee_u64 < amount, BuffcatErrorCodes::InsufficientAfterFee);
+    require!(fee_u64 < amount, BuffcatErrorCodes::AmountInsufficientAfterFee);
 
     Ok(fee_u64)
 }
@@ -824,14 +820,14 @@ pub struct GlobalInfo {
     pub founder_wallet: Pubkey, // 32
     pub fee_percentage: u64, // 64 / 8 = 8
     pub fee_percentage_divider: u64, // 64 / 8 = 8
+    pub min_fee_for_distribution: u64, // 64 / 8 = 8
     pub min_fee: u64, // 64 / 8 = 8
     pub developer_fee_share: u64, // 64 / 8 = 8
     pub founder_fee_share: u64, // 64 / 8 = 8
-    pub min_lock_value: u16, // 16 / 8 = 2
 }
 
 impl GlobalInfo {
-    pub const LEN: usize = 1 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 2;
+    pub const LEN: usize = 1 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 8 + 2;
 }
 
 #[account]
@@ -890,7 +886,7 @@ pub enum BuffcatErrorCodes {
     #[msg("Invalid token metadata address")]
     InvalidTokenMetadataAddress,
     #[msg("Fee >= amount (insufficient after fee)")]
-    InsufficientAfterFee,
+    AmountInsufficientAfterFee,
     #[msg("Overflow")]
     Overflow,
 }

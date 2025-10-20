@@ -68,7 +68,7 @@ contract BuffcatUpgradeable is
         feePercentage = 5;
         feePercentageDivider = 1000;
         minFeeForDistribution = 2;
-        minFee = 10;
+        minFee = 2;
     }
 
     // External -
@@ -157,7 +157,7 @@ contract BuffcatUpgradeable is
     function calculateFee(uint256 _amount) internal view returns (uint256) {
         uint256 fee = (_amount * feePercentage) / feePercentageDivider;
         if (fee < minFeeForDistribution) fee = minFee;
-        if (fee > _amount) revert InvalidAmount();
+        if (fee >= _amount) revert AmountInsufficientAfterFee();
         return fee;
     }
 

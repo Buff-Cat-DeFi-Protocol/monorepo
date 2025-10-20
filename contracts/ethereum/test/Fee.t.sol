@@ -52,8 +52,12 @@ contract LockTests is TestSetUp {
 
         token1.approve(address(buffcat), initialBalance);
 
-        uint256 lockAmount = 9;
-        vm.expectRevert(IBuffcat.InvalidAmount.selector);
+        uint256 lockAmount = 1;
+        vm.expectRevert(IBuffcat.AmountInsufficientAfterFee.selector);
+        buffcat.lock(address(token1), lockAmount);
+
+        lockAmount = 2;
+        vm.expectRevert(IBuffcat.AmountInsufficientAfterFee.selector);
         buffcat.lock(address(token1), lockAmount);
 
         vm.stopPrank();
