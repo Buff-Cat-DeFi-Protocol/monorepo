@@ -155,3 +155,89 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 99%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 99%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 99%;
+
+    --secondary: 0 0% 99%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 195 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 354 70% 50%;
+    --destructive-foreground: 0 0% 99%;
+
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 195 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Custom Buffcat colors */
+    --crypto-blue: 195 100% 50%;
+    --crypto-blue-dark: 195 100% 45%;
+    --deep-blue: 217 100% 50%;
+    --accent-red: 354 70% 50%;
+
+    /* Gradient tokens */
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(195 100% 50%),
+      hsl(217 100% 50%)
+    );
+    --gradient-accent: linear-gradient(
+      90deg,
+      hsl(195 100% 50% / 0.1),
+      hsl(217 100% 50% / 0.1)
+    );
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .neo-shadow {
+    box-shadow: 8px 8px 0px hsl(var(--primary));
+  }
+
+  .neo-shadow-sm {
+    box-shadow: 4px 4px 0px hsl(var(--primary));
+  }
+
+  .neo-shadow-lg {
+    box-shadow: 12px 12px 0px hsl(var(--primary));
+  }
+
+  .neo-shadow-accent {
+    box-shadow: 8px 8px 0px hsl(var(--crypto-blue));
+  }
+
+  .gradient-text {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--crypto-blue)),
+      hsl(var(--deep-blue))
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

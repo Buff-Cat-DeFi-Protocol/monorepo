@@ -17,7 +17,7 @@ export default function Loading() {
         <Image
           height={192}
           width={192}
-          src={"/twoside-logo.png"}
+          src={"/twoside-bold.png"}
           alt="Twoside Logo"
         />
       </motion.div>

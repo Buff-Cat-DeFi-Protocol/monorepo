@@ -69,14 +69,14 @@ export const twosideWebsiteMetadata: Metadata = {
       Optimize your DeFi strategy with flexible token management.`,
     images: [
       {
-        url: "/Twoside.png", // Create this image (1200x630px recommended)
+        url: "/twoside-bold.png", // Create this image (1200x630px recommended)
         width: 1200,
         height: 630,
         alt: "Twoside - Token Locking Platform",
         type: "image/png",
       },
       {
-        url: "/Twoside.png", // Square version for some platforms
+        url: "/twoside-bold.png", // Square version for some platforms
         width: 800,
         height: 800,
         alt: "Twoside Logo",
@@ -93,7 +93,7 @@ export const twosideWebsiteMetadata: Metadata = {
       "Lock tokens, get derivatives, redeem 1:1. Flexible DeFi token management.",
     creator: "@TwosideOfficial", // Replace with your Twitter handle
     site: "@TwosideOfficial",
-    images: ["/Twoside.png"], // 1200x600px recommended
+    images: ["/twoside-bold.png"], // 1200x600px recommended
   },
 
   // Icons and visual branding
