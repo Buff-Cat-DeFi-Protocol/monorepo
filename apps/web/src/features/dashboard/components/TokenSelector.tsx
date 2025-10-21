@@ -48,12 +48,12 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center backdrop-blur-sm bg-custom-tertiary-color/30"
+      className="fixed inset-0 z-50 flex justify-center backdrop-blur-sm bg-custom-secondary-color/30"
       onClick={onClose}
     >
       <div
         className="top-30 relative rounded-xl w-full max-w-md h-[90vh] flex flex-col 
-        bg-custom-tertiary-color border border-custom-secondary-color/30"
+        bg-custom-secondary-color border border-custom-primary-color/30"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with close button */}
@@ -61,7 +61,7 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
           <div className={typography.h4}>Select A Token</div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-custom-secondary-color/10 rounded cursor-pointer"
+            className="p-1 hover:bg-custom-primary-color/10 rounded cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -101,7 +101,7 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
                   <button
                     key={token.address}
                     className="w-full flex items-center px-3 py-3 rounded-lg cursor-pointer 
-                    hover:bg-custom-secondary-color hover:text-custom-tertiary-text"
+                    hover:bg-custom-primary-color hover:text-custom-tertiary-text"
                     onClick={() => onSelectToken && onSelectToken(token)}
                   >
                     {token.logoURI && token.logoURI !== "" && (

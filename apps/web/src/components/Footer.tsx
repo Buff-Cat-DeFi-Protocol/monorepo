@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
                     target="_blank"
                     className="hover:text-white text-gray-400 transition-colors duration-200"
                   >
-                    <Twitter size={20} className="text-custom-secondary-color" />
+                    <Twitter size={20} className="text-custom-primary-color" />
                   </a>
                 </div>
               </div>

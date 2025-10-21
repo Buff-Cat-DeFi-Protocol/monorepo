@@ -7,22 +7,20 @@
   box-shadow: 8px 8px 0px #000000;
 }
 
-
 @theme {
-  --color-custom-root-bg: #FDFFFC;
+  --color-custom-root-bg: #fdfffc;
   --color-custom-root-text: #000000;
 
   --color-custom-primary-color: #000000;
-  --color-custom-secondary-color: #000000;
-  --color-custom-tertiary-color: #FDFFFC;
+  --color-custom-secondary-color: #fdfffc;
 
   --color-crypto-blue: #00d4ff;
   --color-crypto-blue-dark: #00b8e6;
   --color-deep-blue: #0066ff;
 
   --color-custom-primary-text: #000000;
-  --color-custom-secondary-text: #E71D36;
-  --color-custom-tertiary-text: #FDFFFC;
+  --color-custom-secondary-text: #e71d36;
+  --color-custom-tertiary-text: #fdfffc;
   --color-custom-muted-text: hsl(220, 10%, 60%);
 
   --color-custom-card-background: hsl(220, 15%, 12%);
@@ -33,9 +31,13 @@
 body {
   font-family: var(--font-custom-font), sans-serif;
   opacity: 0.8;
-  background-image:  radial-gradient(#000000 0.5px, transparent 0.5px), radial-gradient(#000000 0.5px, #FDFFFC 0.5px);
+  background-image:
+    radial-gradient(#000000 0.5px, transparent 0.5px),
+    radial-gradient(#000000 0.5px, #fdfffc 0.5px);
   background-size: 20px 20px;
-  background-position: 0 0,10px 10px;
+  background-position:
+    0 0,
+    10px 10px;
 }
 
 @theme inline {

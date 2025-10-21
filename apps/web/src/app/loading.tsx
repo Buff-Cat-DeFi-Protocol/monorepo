@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-custom-tertiary-color">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-custom-secondary-color">
       <motion.div
         animate={{ scale: [1, 1.25, 1] }}
         transition={{

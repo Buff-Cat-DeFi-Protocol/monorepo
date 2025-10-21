@@ -73,7 +73,7 @@ export default function LockPanel({
             <Button
               onClick={handletokenSelectorTrigger}
               variant="ghost"
-              className="me-6 my-2 !py-6 !ps-0 hover:bg-custom-secondary-color/20 cursor-pointer flex items-center"
+              className="me-6 my-2 !py-6 !ps-0 hover:bg-custom-primary-color/20 cursor-pointer flex items-center"
             >
               <span>
                 <ImageWithFallback
@@ -235,8 +235,10 @@ export default function LockPanel({
           </div>
         </CollapsibleContent>
       </Collapsible>
-      <Card className="w-112 rounded-2xl text-custom-primary-text mt-2 bg-transparent shadow-none
-      border border-custom-primary-color/30">
+      <Card
+        className="w-112 rounded-2xl text-custom-primary-text mt-2 bg-transparent shadow-none
+      border border-custom-primary-color/30"
+      >
         <CardContent className="px-4">
           {
             <div>
