@@ -52,7 +52,7 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
       onClick={onClose}
     >
       <div
-        className="top-30 relative rounded-xl w-full max-w-md h-[90vh] flex flex-col 
+        className="top-30 relative rounded-xl w-full md:max-w-md h-[90vh] flex flex-col 
         bg-custom-secondary-color border border-custom-primary-color/30"
         onClick={(e) => e.stopPropagation()}
       >
