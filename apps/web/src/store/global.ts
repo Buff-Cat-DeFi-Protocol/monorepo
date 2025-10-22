@@ -4,6 +4,8 @@ import { TokenInfo } from "@uniswap/token-lists";
 import { TokenSelectorAtom, SelectedTokensAtom, Tab } from "../types/state";
 import { atom } from "jotai";
 
+export const currentUserAtom = atom<string>("");
+
 export const tokenSelectorAtom = atom<TokenSelectorAtom>({
   isOpen: false,
   onClose: () => {},

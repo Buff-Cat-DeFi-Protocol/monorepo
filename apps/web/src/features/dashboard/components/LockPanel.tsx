@@ -14,14 +14,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ImageWithFallback from "@/components/ImageWithFallback";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { placeholders } from "@/constants/placeholders";
 import { TokenInfo } from "@uniswap/token-lists";
 import { useMemo, useState } from "react";
-import { tokenSelectorAtom, selectedTokensAtom } from "@/store/global";
+import {
+  tokenSelectorAtom,
+  selectedTokensAtom,
+  selectedBlockchainAtom,
+  currentUserAtom,
+} from "@/store/global";
 import { Card, CardContent } from "@/components/ui/card";
 import { Blockchain } from "@/types/global";
 import ThemedButton from "@/components/themed/button";
+import { useTokenBalance } from "../hooks/query/tokens";
 
 interface LockPanelProps {
   blockchain: Blockchain;
@@ -59,6 +65,19 @@ export default function LockPanel({
   const displayToken = useMemo(() => {
     return selectedTokens.lockToken || defaultToken;
   }, [selectedTokens.lockToken, defaultToken]);
+
+  // const selectedBlockchain = useAtomValue(selectedBlockchainAtom);
+  // const currentUser = useAtomValue(currentUserAtom);
+
+  // const {
+  //   data: tokenBalanceData,
+  //   isLoading: isTokenBalanceLoading,
+  //   error: tokenBalanceError,
+  // } = useTokenBalance({
+  //   chain: selectedBlockchain,
+  //   tokenAddressOrMint: "0xb19b36b1456E65E3A6D514D3F715f204BD59f431",
+  //   userAddress: currentUser,
+  // });
 
   return (
     <div className="flex flex-col items-center">
@@ -133,6 +152,16 @@ export default function LockPanel({
           }
 
           <div className="text-sm text-custom-muted-text">
+            {/* {isTokenBalanceLoading
+              ? "Loading..."
+              : tokenBalanceError
+                ? "Not Found"
+                : "Lockable: " +
+                  tokenBalanceData?.balance +
+                  " " +
+                  (displayToken
+                    ? displayToken.symbol
+                    : placeholders.tokenSymbol)} */}
             {"Lockable: 1.237 " +
               (displayToken ? displayToken.symbol : placeholders.tokenSymbol)}
           </div>
