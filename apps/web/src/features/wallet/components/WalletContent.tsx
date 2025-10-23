@@ -7,8 +7,8 @@ import { injected } from "wagmi/connectors";
 import { Blockchain } from "@/types/global";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { useAtom } from "jotai";
-import { currentUserAtom } from "@/store/global";
+import { useAtom, useAtomValue } from "jotai";
+import { currentUserAtom, selectedBlockchainAtom } from "@/store/global";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { LogOut, Wallet } from "lucide-react";
@@ -20,48 +20,62 @@ const WalletMultiButtonDynamic = dynamic(
   { ssr: true }
 );
 
-interface WalletContentProps {
-  blockchain: Blockchain;
-}
-
 const formatWalletAddress = (address: string | null) => {
   if (!address) return "";
   return `${address.slice(0, 8)}...${address.slice(-4)}`;
 };
 
-const WalletContent: React.FC<WalletContentProps> = ({
-  blockchain,
-}: WalletContentProps) => {
+const WalletContent: React.FC = () => {
   const { connect } = useConnect();
   const { address: evmAddress, isConnected: isEvmConnected } = useAccount();
   const { disconnect: disconnectEvm } = useDisconnect();
-  const { publicKey: solanaAddress, disconnect: disconnectSolana } =
-    useWallet();
+  const {
+    publicKey: solanaAddress,
+    disconnect: disconnectSolana,
+    connected: isSolanaConnected,
+  } = useWallet();
   const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
+  const selectedBlockchain = useAtomValue(selectedBlockchainAtom);
 
   useEffect(() => {
-    if (blockchain.id == "sol") {
-      if (solanaAddress) {
+    if (selectedBlockchain.id === "sol") {
+      if (isSolanaConnected && solanaAddress) {
         setCurrentUser({
           address: solanaAddress.toString(),
           loggedIn: true,
         });
+      } else {
+        setCurrentUser({
+          address: "",
+          loggedIn: false,
+        });
       }
     } else {
-      if (evmAddress && isEvmConnected) {
+      if (isEvmConnected && evmAddress) {
         setCurrentUser({
           address: evmAddress,
           loggedIn: true,
         });
+      } else {
+        setCurrentUser({
+          address: "",
+          loggedIn: false,
+        });
       }
     }
-  }, [evmAddress]);
+  }, [
+    selectedBlockchain,
+    evmAddress,
+    solanaAddress,
+    isSolanaConnected,
+    isEvmConnected,
+  ]);
 
   const handleNoWalletConnectAttempt = (blockchain: Blockchain) => {
-    toast.error(`No ${blockchain.name} wallet found.`);
+    toast.error(`No ${selectedBlockchain.name} wallet found.`);
   };
 
-  if (blockchain.id == "sol") {
+  if (selectedBlockchain.id == "sol") {
     if (window != undefined && window.solana != undefined) {
       return solanaAddress && currentUser.loggedIn ? (
         <div className="flex items-center space-x-4">
@@ -87,7 +101,7 @@ const WalletContent: React.FC<WalletContentProps> = ({
       return (
         <Button
           size="lg"
-          onClick={() => handleNoWalletConnectAttempt(blockchain)}
+          onClick={() => handleNoWalletConnectAttempt(selectedBlockchain)}
           className="bg-black hover:bg-black text-primary-foreground 
                 border-primary border-2 transition-all hover:scale-103
                 font-bold text-lg px-8 cursor-pointer"
@@ -108,7 +122,7 @@ const WalletContent: React.FC<WalletContentProps> = ({
                 font-bold text-lg px-8 cursor-pointer"
         onClick={() => {
           if (window != undefined && window.ethereum == undefined) {
-            handleNoWalletConnectAttempt(blockchain);
+            handleNoWalletConnectAttempt(selectedBlockchain);
           } else {
             connect({ connector: injected() });
           }
@@ -136,7 +150,9 @@ const WalletContent: React.FC<WalletContentProps> = ({
                 border-primary border-2 transition-all hover:scale-103
                 font-bold text-lg px-8 cursor-pointer"
         onClick={() =>
-          blockchain.name === "Ethereum" ? disconnectEvm() : disconnectSolana()
+          selectedBlockchain.name === "Ethereum"
+            ? disconnectEvm()
+            : disconnectSolana()
         }
       >
         <LogOut className="h-4 w-4 mr-2" />

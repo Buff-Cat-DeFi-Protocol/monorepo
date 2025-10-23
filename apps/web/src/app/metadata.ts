@@ -10,7 +10,7 @@ export const domain = {
 export const twosideWebsiteMetadata: Metadata = {
   // Basic SEO
   title: {
-    default: "Twoside - Token Locking Utility with Derivatives",
+    default: "Twoside | Token Locking Utility with Derivatives",
     template: "%s | Twoside",
   },
   description: `Twoside is a secure token locking utility where users lock their tokens 
@@ -99,8 +99,8 @@ export const twosideWebsiteMetadata: Metadata = {
   // Icons and visual branding
   icons: {
     icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico", sizes: "32x32", type: "image/png" },
       { url: "./favicon.ico", sizes: "any" },
     ],
     apple: [
@@ -109,7 +109,7 @@ export const twosideWebsiteMetadata: Metadata = {
     other: [
       {
         rel: "mask-icon",
-        url: "/Twoside.svg",
+        url: "/twoside.svg",
         color: "#5bbad5",
       },
     ],

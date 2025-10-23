@@ -35,6 +35,7 @@ const BlockchainSelector = () => {
         const sel = blockchains.find((b) => String(b.id) === val);
         if (sel) setBlockchain(sel);
       }}
+      defaultValue={blockchains[0].id.toString()}
     >
       <SelectTrigger
         className="w-[180px] cursor-pointer shadow-none mb-4 lg:mb-0
