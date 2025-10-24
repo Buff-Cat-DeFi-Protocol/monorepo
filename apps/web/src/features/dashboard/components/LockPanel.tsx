@@ -28,6 +28,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Blockchain } from "@/types/global";
 import ThemedButton from "@/components/themed/button";
 import { useTokenBalance } from "../hooks/query/tokens";
+import { toast } from "sonner";
+import { useTransactionDialog } from "../hooks/transactionDialogHook";
 
 interface LockPanelProps {
   blockchain: Blockchain;
@@ -39,12 +41,18 @@ export default function LockPanel({
   fetchedTokens,
 }: LockPanelProps) {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
+  const [selectedTokens, setSelectedTokens] = useAtom(selectedTokensAtom);
+  const [realBlockchainValue, setRealBlockchainValue] =
+    useState<boolean>(false);
+  const [amount, setAmount] = useState<number>(
+    realBlockchainValue && selectedTokens.lockToken?.decimals
+      ? 1 * 10 ** selectedTokens.lockToken?.decimals
+      : 1.0
+  );
 
   const defaultToken = useMemo(() => {
     return fetchedTokens && fetchedTokens.length > 1 ? fetchedTokens[1] : null;
   }, [fetchedTokens]);
-
-  const [selectedTokens, setSelectedTokens] = useAtom(selectedTokensAtom);
 
   const setTokenSelectorState = useSetAtom(tokenSelectorAtom);
 
@@ -79,10 +87,29 @@ export default function LockPanel({
     userAddress: currentUser.address,
   });
 
+  const { withConfirmation } = useTransactionDialog();
+
+  const handleLockTokens = async () => {
+    console.log("handleLockTokens clicked");
+    await withConfirmation(
+      async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10_000));
+      },
+      {
+        title: "Lock Tokens?",
+        description: `Do you want to lock ${amount} ${selectedTokens.lockToken?.name.toString()}s?`,
+        successMessage: "Your tokens have been locked successfully.",
+        loadingTitle: "Processing Transaction",
+        loadingDescription:
+          "Please wait while your transaction is confirmed on Ethereum...",
+      }
+    );
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className="w-full md:w-112 rounded-2xl px-4 py-2">
-        <div className="text-xs text-custom-muted-text">You Lock</div>
+        <div className="text-xs text-custom-muted-text">You Lock: {amount}</div>
         <div className="flex justify-between">
           {!fetchedTokens ? (
             <div className="w-36 h-12 me-6 mb-2 text-3xl font-bold text-left flex items-center">
@@ -134,6 +161,8 @@ export default function LockPanel({
               min={0}
               inputMode="decimal"
               placeholder="1.00"
+              value={amount}
+              onChange={(e) => setAmount(parseInt(e.target.value))}
               aria-label="amount"
               className="h-9 my-2 !text-3xl font-bold flex items-center shadow-none
               border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-transparent
@@ -310,6 +339,7 @@ export default function LockPanel({
         variant="outline"
         size="lg"
         className="w-74 md:w-112 mt-2"
+        onClick={handleLockTokens}
       >
         <Lock /> Lock Tokens
       </ThemedButton>

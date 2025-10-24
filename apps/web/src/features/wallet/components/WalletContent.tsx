@@ -182,7 +182,7 @@ function EvmWalletConnect() {
           <span>Connect Wallet</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="h-76 w-104 neo-shadow-sm">
+      <DialogContent className="h-76 w-104 neo-shadow-sm border border-custom-primary-color">
         <DialogHeader className="flex items-center justify-center w-full">
           <DialogTitle className="px-10 text-center text-custom-primary-color text-2xl mt-10">
             Connect a Ethereum wallet to continue

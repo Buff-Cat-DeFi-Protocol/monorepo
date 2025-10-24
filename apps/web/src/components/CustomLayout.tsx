@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Toaster } from "./ui/sonner";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
+import { DialogProvider } from "./Dialog";
 
 export function CustomLayout({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient({
@@ -33,15 +34,17 @@ export function CustomLayout({ children }: { children: ReactNode }) {
   });
 
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <SolanaProvider>
-          <Header />
-          {children}
-          <Footer />
-          <Toaster position="bottom-right" richColors />
-        </SolanaProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <DialogProvider>
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <SolanaProvider>
+            <Header />
+            {children}
+            <Footer />
+            <Toaster position="bottom-right" richColors />
+          </SolanaProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </DialogProvider>
   );
 }
