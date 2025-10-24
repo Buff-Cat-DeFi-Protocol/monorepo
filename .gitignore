@@ -51,5 +51,8 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/tasks.json
 
+contracts/ethereum/broadcast/
+contracts/base/broadcast/
+
 
 
