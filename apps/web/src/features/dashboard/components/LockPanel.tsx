@@ -37,6 +37,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useWriteContract } from "wagmi";
+import erc20Abi from "../lib/abis/erc20.json";
+import { envVariables } from "@/lib/envVariables";
 
 interface LockPanelProps {
   blockchain: Blockchain;
@@ -55,6 +58,7 @@ export default function LockPanel({
       ? 1 * 10 ** selectedTokens.lockToken?.decimals
       : 1.0
   );
+  const { writeContractAsync } = useWriteContract();
 
   const defaultToken = useMemo(() => {
     return fetchedTokens && fetchedTokens.length > 1 ? fetchedTokens[1] : null;
@@ -95,8 +99,65 @@ export default function LockPanel({
 
   const { withConfirmation } = useTransactionDialog();
 
+  const handleTokenApproval = async () => {
+    if (!currentUser.loggedIn) {
+      toast.error("Connect a wallet first.");
+      return;
+    }
+    if (amount == 0 || amount < 0) {
+      toast.error("Invalid Amount Input");
+      return;
+    }
+    const decimals = selectedTokens.lockToken?.decimals;
+    let approvalAmount = amount;
+    if (useRawValues) {
+      if (!decimals) {
+        toast.error(
+          "Token decimals not found, toggle to use raw values instead."
+        );
+        return;
+      }
+      approvalAmount = amount * decimals;
+    }
+    const twosideContract =
+      selectedBlockchain.id == "eth"
+        ? envVariables.twosideContract.eth
+        : envVariables.twosideContract.base;
+    if (twosideContract == "") {
+      toast.error(
+        `${selectedBlockchain.name} Twoside contract address not set.`
+      );
+      return;
+    }
+    // const tokenAddress = selectedTokens.lockToken?.address;
+    // if (!tokenAddress) {
+    //   toast.error("Select a token and try again.");
+    //   return;
+    // }
+    const tokenAddress = "0xb19b36b1456E65E3A6D514D3F715f204BD59f431";
+    await withConfirmation(
+      async () => {
+        const sig = await writeContractAsync({
+          address: tokenAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [twosideContract, amount],
+        });
+        toast.success("Signature", {
+          description: `${sig}`,
+        });
+      },
+      {
+        title: "Approve Tokens?",
+        description: `Do you want to approve ${amount} ${selectedTokens.lockToken?.name.toString()}?`,
+        successMessage: "Your tokens have been approved successfully.",
+        loadingTitle: "Processing Transaction",
+        loadingDescription: `Please wait while your transaction is confirmed on ${selectedBlockchain.name}...`,
+      }
+    );
+  };
+
   const handleLockTokens = async () => {
-    console.log("handleLockTokens clicked");
     await withConfirmation(
       async () => {
         await new Promise((resolve) => setTimeout(resolve, 10_000));
@@ -106,8 +167,7 @@ export default function LockPanel({
         description: `Do you want to lock ${amount} ${selectedTokens.lockToken?.name.toString()}?`,
         successMessage: "Your tokens have been locked successfully.",
         loadingTitle: "Processing Transaction",
-        loadingDescription:
-          "Please wait while your transaction is confirmed on Ethereum...",
+        loadingDescription: `Please wait while your transaction is confirmed on ${selectedBlockchain.name}...`,
       }
     );
   };
@@ -355,14 +415,17 @@ export default function LockPanel({
           </div>
         </CardContent>
       </Card>
-      <ThemedButton
-        style="primary"
-        variant="outline"
-        size="lg"
-        className="w-74 md:w-112 mt-2"
-      >
-        <CircleCheck /> Approve Tokens
-      </ThemedButton>
+      {selectedBlockchain.id == "sol" ? null : (
+        <ThemedButton
+          style="primary"
+          variant="outline"
+          size="lg"
+          className="w-74 md:w-112 mt-2"
+          onClick={handleTokenApproval}
+        >
+          <CircleCheck /> Approve Tokens
+        </ThemedButton>
+      )}
       <ThemedButton
         style="secondary"
         variant="outline"

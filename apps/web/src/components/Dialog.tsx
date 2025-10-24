@@ -4,6 +4,7 @@ import React, {
   useContext,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import {
@@ -141,18 +142,33 @@ export const useDialog = () => {
 const ConsentDialog = () => {
   const { consentState, hideConsentDialog } = useDialog();
 
+  const isConfirmingRef = useRef(false);
+
   const handleConfirm = () => {
-    consentState.onConfirm(true);
-    hideConsentDialog();
+    try {
+      isConfirmingRef.current = true;
+      consentState.onConfirm?.(true);
+    } catch (e) {
+      console.error("consent onConfirm error", e);
+    } finally {
+      hideConsentDialog();
+      setTimeout(() => {
+        isConfirmingRef.current = false;
+      }, 0);
+    }
   };
 
   const handleCancel = () => {
-    consentState.onCancel(false);
+    try {
+      consentState.onCancel?.(false);
+    } catch (e) {
+      console.error("consent onCancel error", e);
+    }
     hideConsentDialog();
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
+    if (!open && !isConfirmingRef.current) {
       handleCancel();
     }
   };

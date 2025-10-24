@@ -1,0 +1,7 @@
+export const envVariables = {
+  twosideContract: {
+    eth: "0xA15BB66138824a1c7167f5E85b957d04Dd34E468",
+    base: "",
+    sol: "",
+  },
+};
