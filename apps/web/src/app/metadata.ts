@@ -10,7 +10,7 @@ export const domain = {
 export const twosideWebsiteMetadata: Metadata = {
   // Basic SEO
   title: {
-    default: "Twoside | Token Locking Utility with Derivatives",
+    default: "Twoside | Removing Impermanent Loss With 1:1 Minted Tokens",
     template: "%s | Twoside",
   },
   description: `Twoside is a secure token locking utility where users lock their tokens 
@@ -64,7 +64,7 @@ export const twosideWebsiteMetadata: Metadata = {
     locale: "en_US",
     url: domain.https, // Replace with your actual domain
     siteName: "Twoside",
-    title: "Twoside - Token Locking Utility with Derivatives",
+    title: "Twoside - Removing Impermanent Loss With 1:1 Minted Tokens",
     description: `Secure token locking utility with 1:1 redeemable derivatives. 
       Optimize your DeFi strategy with flexible token management.`,
     images: [
@@ -72,7 +72,7 @@ export const twosideWebsiteMetadata: Metadata = {
         url: "/twoside-bold.png", // Create this image (1200x630px recommended)
         width: 1200,
         height: 630,
-        alt: "Twoside - Token Locking Platform",
+        alt: "Twoside - Removing Impermanent Loss With 1:1 Minted Tokens",
         type: "image/png",
       },
       {
@@ -88,7 +88,7 @@ export const twosideWebsiteMetadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "Twoside - Token Locking Utility",
+    title: "Twoside - Removing Impermanent Loss With 1:1 Minted Tokens",
     description:
       "Lock tokens, get derivatives, redeem 1:1. Flexible DeFi token management.",
     creator: "@TwosideOfficial", // Replace with your Twitter handle
