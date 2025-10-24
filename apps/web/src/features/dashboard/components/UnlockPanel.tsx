@@ -14,14 +14,28 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ImageWithFallback from "@/components/ImageWithFallback";
-import { useAtom, useSetAtom } from "jotai";
-import { selectedTokensAtom, tokenSelectorAtom } from "@/store/global";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+  currentUserAtom,
+  selectedBlockchainAtom,
+  selectedTokensAtom,
+  tokenSelectorAtom,
+} from "@/store/global";
 import { placeholders } from "@/constants/placeholders";
 import { TokenInfo } from "@uniswap/token-lists";
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Blockchain } from "@/types/global";
 import ThemedButton from "@/components/themed/button";
+import { useTokenBalance } from "../hooks/query/tokens";
+import { useTransactionDialog } from "../hooks/transactionDialogHook";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 interface UnlockPanelProps {
   blockchain: Blockchain;
@@ -33,12 +47,17 @@ export default function UnlockPanel({
   fetchedTokens,
 }: UnlockPanelProps) {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
+  const [selectedTokens, setSelectedTokens] = useAtom(selectedTokensAtom);
+  const [useRawValues, setUseRawValues] = useState<boolean>(false);
+  const [amount, setAmount] = useState<number>(
+    useRawValues && selectedTokens.lockToken?.decimals
+      ? 1 * 10 ** selectedTokens.lockToken?.decimals
+      : 1.0
+  );
 
   const defaultToken = useMemo(() => {
     return fetchedTokens && fetchedTokens.length > 1 ? fetchedTokens[1] : null;
   }, [fetchedTokens]);
-
-  const [selectedTokens, setSelectedTokens] = useAtom(selectedTokensAtom);
 
   const setTokenSelectorState = useSetAtom(tokenSelectorAtom);
 
@@ -60,10 +79,67 @@ export default function UnlockPanel({
     return selectedTokens.unlockToken || defaultToken;
   }, [selectedTokens.unlockToken, defaultToken]);
 
+  const selectedBlockchain = useAtomValue(selectedBlockchainAtom);
+  const currentUser = useAtomValue(currentUserAtom);
+
+  const {
+    data: tokenBalanceData,
+    isLoading: isTokenBalanceLoading,
+    error: tokenBalanceError,
+  } = useTokenBalance({
+    chain: selectedBlockchain,
+    tokenAddressOrMint: "0xb19b36b1456E65E3A6D514D3F715f204BD59f431",
+    userAddress: currentUser.address,
+  });
+
+  const { withConfirmation } = useTransactionDialog();
+
+  const handleUnlockTokens = async () => {
+    console.log("handleLockTokens clicked");
+    await withConfirmation(
+      async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10_000));
+      },
+      {
+        title: "Lock Tokens?",
+        description: `Do you want to lock ${amount} ${selectedTokens.lockToken?.name.toString()}?`,
+        successMessage: "Your tokens have been locked successfully.",
+        loadingTitle: "Processing Transaction",
+        loadingDescription:
+          "Please wait while your transaction is confirmed on Ethereum...",
+      }
+    );
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className="w-full md:w-112 rounded-2xl px-4 py-2">
-        <div className="text-xs text-custom-muted-text">You Unlock</div>
+        <div className="flex justify-between">
+          <div className="text-xs text-custom-muted-text">You Unlock</div>
+          <div className="flex items-center space-x-2">
+            <Tooltip>
+              <TooltipTrigger>
+                {" "}
+                <Label htmlFor="use-raw-values" className="text-xs">
+                  Use Raw Values
+                </Label>
+              </TooltipTrigger>
+              <TooltipContent className="w-60">
+                <p>
+                  Value you enter will interpreted as raw values. 10 would
+                  interpreted as 10 tokens but now it would be interpreted as as
+                  a raw value like 0.00...10.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <Switch
+              className="shadow-none"
+              id="use-raw-values"
+              checked={useRawValues}
+              onCheckedChange={(checked) => setUseRawValues(checked)}
+            />
+          </div>
+        </div>
         <div className="flex justify-between">
           {!fetchedTokens ? (
             <div className="w-36 h-12 me-6 mb-2 text-3xl font-bold text-left flex items-center">
@@ -115,6 +191,8 @@ export default function UnlockPanel({
               min={0}
               inputMode="decimal"
               placeholder="1.00"
+              value={amount}
+              onChange={(e) => setAmount(parseInt(e.target.value))}
               aria-label="amount"
               className="h-9 my-2 !text-3xl font-bold flex items-center shadow-none
               border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-transparent
@@ -133,8 +211,18 @@ export default function UnlockPanel({
           }
 
           <div className="text-sm text-custom-muted-text">
-            {"Unlockable: 1.237 " +
-              (displayToken ? displayToken.symbol : placeholders.tokenSymbol)}
+            {isTokenBalanceLoading
+              ? "Loading..."
+              : tokenBalanceError
+                ? "Not Found"
+                : tokenBalanceData?.balance
+                  ? "Unlockable: " +
+                    tokenBalanceData?.balance +
+                    " " +
+                    (displayToken
+                      ? displayToken.symbol
+                      : placeholders.tokenSymbol)
+                  : "Unlockable: Not Found"}
           </div>
         </div>
       </div>
@@ -279,6 +367,7 @@ export default function UnlockPanel({
         variant="outline"
         size="lg"
         className="w-74 md:w-112 mt-2"
+        onClick={handleUnlockTokens}
       >
         <Unlock /> Unlock Tokens
       </ThemedButton>

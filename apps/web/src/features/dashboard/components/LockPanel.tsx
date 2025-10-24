@@ -30,6 +30,13 @@ import ThemedButton from "@/components/themed/button";
 import { useTokenBalance } from "../hooks/query/tokens";
 import { toast } from "sonner";
 import { useTransactionDialog } from "../hooks/transactionDialogHook";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LockPanelProps {
   blockchain: Blockchain;
@@ -42,10 +49,9 @@ export default function LockPanel({
 }: LockPanelProps) {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
   const [selectedTokens, setSelectedTokens] = useAtom(selectedTokensAtom);
-  const [realBlockchainValue, setRealBlockchainValue] =
-    useState<boolean>(false);
+  const [useRawValues, setUseRawValues] = useState<boolean>(false);
   const [amount, setAmount] = useState<number>(
-    realBlockchainValue && selectedTokens.lockToken?.decimals
+    useRawValues && selectedTokens.lockToken?.decimals
       ? 1 * 10 ** selectedTokens.lockToken?.decimals
       : 1.0
   );
@@ -97,7 +103,7 @@ export default function LockPanel({
       },
       {
         title: "Lock Tokens?",
-        description: `Do you want to lock ${amount} ${selectedTokens.lockToken?.name.toString()}s?`,
+        description: `Do you want to lock ${amount} ${selectedTokens.lockToken?.name.toString()}?`,
         successMessage: "Your tokens have been locked successfully.",
         loadingTitle: "Processing Transaction",
         loadingDescription:
@@ -109,7 +115,32 @@ export default function LockPanel({
   return (
     <div className="flex flex-col items-center">
       <div className="w-full md:w-112 rounded-2xl px-4 py-2">
-        <div className="text-xs text-custom-muted-text">You Lock: {amount}</div>
+        <div className="flex justify-between">
+          <div className="text-xs text-custom-muted-text">You Lock</div>
+          <div className="flex items-center space-x-2">
+            <Tooltip>
+              <TooltipTrigger>
+                {" "}
+                <Label htmlFor="use-raw-values" className="text-xs">
+                  Use Raw Values
+                </Label>
+              </TooltipTrigger>
+              <TooltipContent className="w-60">
+                <p>
+                  Value you enter will interpreted as raw values. 10 would
+                  interpreted as 10 tokens but now it would be interpreted as as
+                  a raw value like 0.00...10.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <Switch
+              className="shadow-none"
+              id="use-raw-values"
+              checked={useRawValues}
+              onCheckedChange={(checked) => setUseRawValues(checked)}
+            />
+          </div>
+        </div>
         <div className="flex justify-between">
           {!fetchedTokens ? (
             <div className="w-36 h-12 me-6 mb-2 text-3xl font-bold text-left flex items-center">
@@ -193,8 +224,6 @@ export default function LockPanel({
                       ? displayToken.symbol
                       : placeholders.tokenSymbol)
                   : "Lockable: Not Found"}
-            {/* {"Lockable: 1.237 " +
-              (displayToken ? displayToken.symbol : placeholders.tokenSymbol)} */}
           </div>
         </div>
       </div>

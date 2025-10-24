@@ -14,6 +14,7 @@ import { Toaster } from "./ui/sonner";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { DialogProvider } from "./Dialog";
+import { TooltipProvider } from "./ui/tooltip";
 
 export function CustomLayout({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient({
@@ -35,16 +36,18 @@ export function CustomLayout({ children }: { children: ReactNode }) {
 
   return (
     <DialogProvider>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <SolanaProvider>
-            <Header />
-            {children}
-            <Footer />
-            <Toaster position="bottom-right" richColors />
-          </SolanaProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
+      <TooltipProvider>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <SolanaProvider>
+              <Header />
+              {children}
+              <Footer />
+              <Toaster position="bottom-right" richColors />
+            </SolanaProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </TooltipProvider>
     </DialogProvider>
   );
 }
