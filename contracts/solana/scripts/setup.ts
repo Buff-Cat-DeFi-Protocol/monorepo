@@ -15,7 +15,7 @@ export const secretKeySeed = [
 ];
 
 export const tokenMint = new PublicKey(
-  "HMCtny2coMmYL8uHSD14eR7cJyEcWNgJWMa65r1svmV2"
+  "4TnMigp7bpru1KiS71iJCuhXzArFrmtKxtVqHUoECQsp"
 );
 
 export const tokenDecimals = 9;

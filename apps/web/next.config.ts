@@ -49,6 +49,16 @@ const nextConfig: NextConfig = {
         hostname: "raw.githubusercontent.com",
         pathname: "/**",
       },
+      {
+        protocol: "http",
+        hostname: "assets.coingecko.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.coingecko.com",
+        pathname: "/**",
+      },
     ],
   },
 };

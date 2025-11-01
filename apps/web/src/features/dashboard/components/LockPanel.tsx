@@ -64,12 +64,7 @@ export default function LockPanel({
   const [useRawValues, setUseRawValues] = useState<boolean>(false);
   const selectedBlockchain = useAtomValue(selectedBlockchainAtom);
   const currentUser = useAtomValue(currentUserAtom);
-  const [amount, setAmount] = useState<number>(
-    useRawValues && selectedTokens.lockToken[selectedBlockchain.id]?.decimals
-      ? 1 *
-          10 ** (selectedTokens.lockToken[selectedBlockchain.id]?.decimals ?? 0)
-      : 1.0
-  );
+  const [amount, setAmount] = useState<number>(1);
   const { writeContractAsync } = useWriteContract();
   const program = useAnchorProgram();
   const wallets = useAnchorProgramWallets();
@@ -167,7 +162,8 @@ export default function LockPanel({
       },
       {
         title: "Approve Tokens?",
-        description: `Do you want to approve ${approvalAmount} ${selectedTokens.lockToken[selectedBlockchain.id]?.name.toString()}?`,
+        description: `Do you want to approve ${approvalAmount} 
+        ${selectedTokens.lockToken[selectedBlockchain.id]?.symbol.toString()}?`,
         successMessage: "Your tokens have been approved successfully.",
         loadingTitle: "Processing Transaction",
         loadingDescription: `Please wait while your transaction is confirmed on ${selectedBlockchain.name}...`,
@@ -199,12 +195,14 @@ export default function LockPanel({
         );
         return;
       }
-      lockAmount = amount * decimals;
+      lockAmount = amount * 10 ** decimals;
     }
     const twosideContract =
       selectedBlockchain.id == "eth"
         ? envVariables.twosideContract.eth
-        : envVariables.twosideContract.base;
+        : selectedBlockchain.id == "base"
+          ? envVariables.twosideContract.base
+          : envVariables.twosideContract.sol;
     if (twosideContract == "") {
       toast.error(
         `${selectedBlockchain.name} Twoside contract address not set.`
@@ -224,13 +222,19 @@ export default function LockPanel({
           const signer = new PublicKey(currentUser.address);
           const signerTokenAta = await setup.getTokenATA(tokenMint, signer);
           const founderWallet = wallets?.founder;
-          const founderAta = await setup.getTokenATA(tokenMint, founderWallet);
           const developerWallet = wallets?.developer;
-          const developerAta = await setup.getTokenATA(tokenMint, developerWallet);
+
           if (!developerWallet || !founderWallet) {
             toast.error("Error getting crucial accounts, reload & try again.");
             return;
           }
+
+          const founderAta = await setup.getTokenATA(tokenMint, founderWallet);
+          const developerAta = await setup.getTokenATA(
+            tokenMint,
+            developerWallet
+          );
+
           sig = await program.methods
             .lock(new anchor.BN(lockAmount))
             .accounts({
@@ -257,7 +261,8 @@ export default function LockPanel({
       },
       {
         title: "Lock Tokens?",
-        description: `Do you want to lock ${lockAmount} ${selectedTokens.lockToken[selectedBlockchain.id]?.name.toString()}?`,
+        description: `Do you want to lock ${lockAmount}
+        ${selectedTokens.lockToken[selectedBlockchain.id]?.symbol.toString()}?`,
         successMessage: "Your tokens have been locked successfully.",
         loadingTitle: "Processing Transaction",
         loadingDescription: `Please wait while your transaction is confirmed on ${selectedBlockchain.name}...`,
@@ -269,7 +274,15 @@ export default function LockPanel({
     <div className="flex flex-col items-center">
       <div className="w-full md:w-112 rounded-2xl px-4 py-2">
         <div className="flex justify-between">
-          <div className="text-xs text-custom-muted-text">You Lock</div>
+          <div className="text-xs text-custom-muted-text">
+            You Lock:{" "}
+            {selectedTokens.lockToken[selectedBlockchain.id]?.address.slice(
+              0,
+              6
+            ) ?? ""}{" "}
+            Decimals:{" "}
+            {selectedTokens.lockToken[selectedBlockchain.id]?.decimals}
+          </div>
           <div className="flex items-center space-x-2">
             <Tooltip>
               <TooltipTrigger>

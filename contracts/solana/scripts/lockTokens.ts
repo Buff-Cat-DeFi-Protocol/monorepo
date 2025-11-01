@@ -12,7 +12,6 @@ import {
   founder,
 } from "./setup";
 import { PublicKey } from "@solana/web3.js";
-import { setup } from "../tests/setup";
 
 (async function main() {
   try {
@@ -52,9 +51,6 @@ import { setup } from "../tests/setup";
       .rpc();
     console.log("Sig: ", sig);
     console.log("");
-
-    const tokenDerivative = setup.getDerivativeMint(tokenMint);
-    console.log("Token Derivative: ", tokenDerivative.pda);
   } catch (e: any) {
     console.error("Fatal error:", e);
     process.exit(1);

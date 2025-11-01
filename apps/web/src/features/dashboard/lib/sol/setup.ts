@@ -1,9 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
 import idl from "./idl.json";
-import { Twoside } from "./twoside";
 import * as splToken from "@solana/spl-token";
-import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { MPL_TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata";
 import { Connection, PublicKey } from "@solana/web3.js";
 
@@ -33,7 +30,7 @@ class Setup {
   public globalInfoBump!: number;
 
   public programId: anchor.web3.PublicKey = new anchor.web3.PublicKey(
-    "VE8xoqmnsw8kKEKaHMcdMYXmWqpaSaEKmRmZrjN63TH"
+    idl.address
   );
 
   public founder!: anchor.web3.PublicKey;

@@ -5,6 +5,7 @@ import { getTokensList } from "../../services/query/tokens";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ethers } from "ethers";
 import { Connection, PublicKey } from "@solana/web3.js";
+import * as splToken from "@solana/spl-token";
 
 export function useAllTokensList(blockchain: SupportedBlockchain) {
   return useQuery<TokenInfo[] | undefined>({
@@ -82,23 +83,31 @@ export function useTokenBalance(
           const mintPublicKey = new PublicKey(tokenAddressOrMint);
           const ownerPublicKey = new PublicKey(userAddress);
 
-          const associatedTokenAccount = await PublicKey.findProgramAddress(
-            [
-              ownerPublicKey.toBuffer(),
-              new PublicKey(
-                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-              ).toBuffer(),
-              mintPublicKey.toBuffer(),
-            ],
-            new PublicKey("ATokenGPvoter…")
-          );
-          const tokenAccountPubkey = associatedTokenAccount[0];
+          // const associatedTokenAccount = await PublicKey.findProgramAddress(
+          //   [
+          //     ownerPublicKey.toBuffer(),
+          //     new PublicKey(
+          //       "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          //     ).toBuffer(),
+          //     mintPublicKey.toBuffer(),
+          //   ],
+          //   new PublicKey("ATokenGPvoter…")
+          // );
+          // const tokenAccountPubkey = associatedTokenAccount[0];
 
-          const resp =
-            await connection.getTokenAccountBalance(tokenAccountPubkey);
-          const decimals = resp.value.decimals;
-          const raw = resp.value.amount;
-          const formatted = Number(resp.value.uiAmount ?? 0);
+          // const resp =
+          //   await connection.getTokenAccountBalance(tokenAccountPubkey);
+
+          const mint = await splToken.getMint(connection, mintPublicKey);
+          const userAtaAddress = splToken.getAssociatedTokenAddressSync(
+            mintPublicKey,
+            ownerPublicKey
+          );
+          const userAta = await splToken.getAccount(connection, userAtaAddress);
+
+          const decimals = mint.decimals;
+          const raw = userAta.amount;
+          const formatted = Number(raw / BigInt(10 ** decimals));
 
           return {
             balance: formatted,

@@ -35,9 +35,9 @@ import { PublicKey } from "@solana/web3.js";
       );
 
     console.log("Unlocking Tokens :-");
-    const lockAmount = 9 * 10 ** tokenDecimals;
+    const unlockAmount = 5 * 10 ** tokenDecimals;
     const sig = await program.methods
-      .unlock(new anchor.BN(lockAmount))
+      .unlock(new anchor.BN(unlockAmount))
       .accounts({
         tokenMint: tokenMint,
         signer: user.publicKey,

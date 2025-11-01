@@ -4,7 +4,6 @@ import { Program, AnchorProvider } from "@coral-xyz/anchor";
 import { useConnection, useAnchorWallet } from "@solana/wallet-adapter-react";
 import * as anchor from "@coral-xyz/anchor";
 import { setup } from "../lib/sol/setup";
-import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
 export function useAnchorProgram(): Program<Twoside> | null {
