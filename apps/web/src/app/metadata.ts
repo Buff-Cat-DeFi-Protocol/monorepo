@@ -13,8 +13,8 @@ export const twosideWebsiteMetadata: Metadata = {
     default: "Twoside | Removing Impermanent Loss With 1:1 Minted Tokens",
     template: "%s | Twoside",
   },
-  description: `Twoside is a secure token locking utility where users lock their tokens 
-    and receive tradeable derivatives that can be redeemed 1:1. 
+  description: `Twoside is a secure token locking utility where users lock their tokens
+    and receive tradeable derivatives that can be redeemed 1:1.
     Maximize your DeFi strategy with flexible token management.`,
 
   // Keywords for SEO
@@ -65,7 +65,7 @@ export const twosideWebsiteMetadata: Metadata = {
     url: domain.https, // Replace with your actual domain
     siteName: "Twoside",
     title: "Twoside - Removing Impermanent Loss With 1:1 Minted Tokens",
-    description: `Secure token locking utility with 1:1 redeemable derivatives. 
+    description: `Secure token locking utility with 1:1 redeemable derivatives.
       Optimize your DeFi strategy with flexible token management.`,
     images: [
       {
@@ -98,11 +98,7 @@ export const twosideWebsiteMetadata: Metadata = {
 
   // Icons and visual branding
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "16x16", type: "image/png" },
-      { url: "/favicon.ico", sizes: "32x32", type: "image/png" },
-      { url: "./favicon.ico", sizes: "any" },
-    ],
+    icon: [{ url: "/favicon.ico", sizes: "48x48", type: "image/png" }],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
