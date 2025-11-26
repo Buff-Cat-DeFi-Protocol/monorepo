@@ -33,6 +33,7 @@ import erc20Abi from "../lib/evm/erc20.json";
 import twosideAbi from "../lib/evm/twoside.json";
 import { useTokenDerivative } from "../hooks/query/contract";
 import { CoinGeckoTokenType } from "@/types/global";
+import TokenInfo from "./TokenInfo";
 
 export default function UnlockPanel() {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
@@ -131,7 +132,7 @@ export default function UnlockPanel() {
       {
         title: "Approve Tokens?",
         description: `Do you want to approve ${amount}
-        ${selectedTokens.unlockToken[selectedBlockchain.id]?.name.toString()}?`,
+        Liquid ${selectedTokens.unlockToken[selectedBlockchain.id]?.name.toString()}?`,
         successMessage: "Your tokens have been approved successfully.",
         loadingTitle: "Processing Transaction",
         loadingDescription: `Please wait while your transaction is confirmed on ${selectedBlockchain.name}...`,
@@ -373,6 +374,9 @@ export default function UnlockPanel() {
           </div>
         </CollapsibleContent>
       </Collapsible>
+      {selectedTokens.unlockToken[selectedBlockchain.id] && (
+        <TokenInfo token={selectedTokens.unlockToken[selectedBlockchain.id]} />
+      )}
       <Card
         className="w-full md:w-112 rounded-2xl text-custom-primary-text mt-2 bg-transparent shadow-none
       border border-custom-primary-color/30"

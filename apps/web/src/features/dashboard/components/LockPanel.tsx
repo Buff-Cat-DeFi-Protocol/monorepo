@@ -32,6 +32,8 @@ import erc20Abi from "../lib/evm/erc20.json";
 import twosideAbi from "../lib/evm/twoside.json";
 import { envVariables } from "@/lib/envVariables";
 import { CoinGeckoTokenType } from "@/types/global";
+import TokenInfo from "./TokenInfo";
+import { useDialog } from "@/components/Dialog";
 
 export default function LockPanel() {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
@@ -40,6 +42,7 @@ export default function LockPanel() {
   const currentUser = useAtomValue(currentUserAtom);
   const [amount, setAmount] = useState<number>(1);
   const { writeContractAsync } = useWriteContract();
+  const { showConsentDialog } = useDialog();
 
   const lockToken = useMemo(() => {
     return selectedTokens.lockToken[selectedBlockchain.id];
@@ -170,6 +173,18 @@ export default function LockPanel() {
         });
         toast.success("Signature", {
           description: `${sig}`,
+        });
+        showConsentDialog({
+          title: "Attention!",
+          description: `Some wallets may not recongnize derivatives right away.
+            Add the token to your wallet manually using the address from updated
+            derivative info section.`,
+          onConfirm: () => {
+            return;
+          },
+          onCancel: () => {
+            return;
+          },
         });
       },
       {
@@ -347,6 +362,9 @@ export default function LockPanel() {
           </div>
         </CollapsibleContent>
       </Collapsible>
+      {selectedTokens.lockToken[selectedBlockchain.id] && (
+        <TokenInfo token={selectedTokens.lockToken[selectedBlockchain.id]} />
+      )}
       <Card
         className="w-full md:w-112 rounded-2xl text-custom-primary-text mt-2 bg-transparent shadow-none
       border border-custom-primary-color/30"
