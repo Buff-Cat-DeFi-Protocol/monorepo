@@ -1,6 +1,7 @@
 export type SupportedBlockchain = "eth" | "base";
 
 export type Blockchain = {
+  chainId: number;
   id: SupportedBlockchain;
   name: string;
   logoUrl: string;

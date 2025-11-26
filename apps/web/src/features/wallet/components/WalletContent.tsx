@@ -111,7 +111,7 @@ function EvmWalletConnect() {
                   if (window != undefined && window.ethereum == undefined) {
                     handleNoWalletConnectAttempt(selectedBlockchain);
                   } else {
-                    connect({ connector });
+                    connect({ connector, chainId: selectedBlockchain.chainId });
                   }
                 }}
               >
