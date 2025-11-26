@@ -34,6 +34,7 @@ import { envVariables } from "@/lib/envVariables";
 import { CoinGeckoTokenType } from "@/types/global";
 import TokenInfo from "./TokenInfo";
 import { useDialog } from "@/components/Dialog";
+import { useTokenDerivative } from "../hooks/query/contract";
 
 export default function LockPanel() {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
@@ -43,6 +44,11 @@ export default function LockPanel() {
   const [amount, setAmount] = useState<number>(1);
   const { writeContractAsync } = useWriteContract();
   const { showConsentDialog } = useDialog();
+  const { refetch: refetchDerivativeData } = useTokenDerivative({
+    chain: selectedBlockchain,
+    tokenAddressOrMint:
+      selectedTokens.lockToken[selectedBlockchain.id]?.address ?? "",
+  });
 
   const lockToken = useMemo(() => {
     return selectedTokens.lockToken[selectedBlockchain.id];
@@ -186,6 +192,7 @@ export default function LockPanel() {
             return;
           },
         });
+        refetchDerivativeData();
       },
       {
         title: "Lock Tokens?",

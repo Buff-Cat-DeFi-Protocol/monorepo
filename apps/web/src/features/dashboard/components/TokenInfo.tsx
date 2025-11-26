@@ -36,7 +36,7 @@ export default function TokenInfo({
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const { data: tokenDerivativeData } = useTokenDerivative({
+  const { data: tokenDerivativeData, isLoading } = useTokenDerivative({
     chain: selectedBlockchain,
     tokenAddressOrMint: token?.address ?? "",
   });
@@ -81,23 +81,28 @@ export default function TokenInfo({
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <Collapsible className="w-full md:w-112 mt-2 rounded-2xl border border-custom-primary-color/30 text-custom-primary-text">
+        <CollapsibleTrigger className="w-full py-2 px-4 flex justify-between">
+          <div className="flex items-center gap-2">
+            <BadgeDollarSign className="h-4 w-4" />
+            <span>Loading...</span>
+          </div>
+        </CollapsibleTrigger>
+
+        {isCollapsibleOpen && <CollapsibleContent>{null}</CollapsibleContent>}
+      </Collapsible>
+    );
+  }
+
   if (tokenDerivativeData == "0x0000000000000000000000000000000000000000") {
     return (
       <Collapsible className="w-full md:w-112 mt-2 rounded-2xl border border-custom-primary-color/30 text-custom-primary-text">
-        <CollapsibleTrigger
-          onClick={() => setIsCollapsibleOpen((val) => !val)}
-          className="w-full py-2 px-4 flex justify-between cursor-pointer"
-        >
+        <CollapsibleTrigger className="w-full py-2 px-4 flex justify-between">
           <div className="flex items-center gap-2">
             <BadgeDollarSign className="h-4 w-4" />
             <span>Derivative Token Info: Not Deployed Yet</span>
-          </div>
-          <div className="flex items-center">
-            {isCollapsibleOpen ? (
-              <ChevronDown className="text-custom-muted-text" />
-            ) : (
-              <ChevronRight className="text-custom-muted-text" />
-            )}
           </div>
         </CollapsibleTrigger>
 
