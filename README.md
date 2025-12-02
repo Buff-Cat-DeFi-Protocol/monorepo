@@ -21,30 +21,33 @@
 
 <div align="center">
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="https://github.com/antpoolerjr.png" width="100px;" alt="Anthony Pooler"/><br />
-      <sub><b>Anthony Pooler</b></sub><br />
-      <a href="https://github.com/antpoolerjr" title="GitHub">
-        <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"/>
-      </a>
-      <a href="https://www.linkedin.com/in/anthony-pooler-27a842b5/" title="LinkedIn">
-        <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn"/>
-      </a>
-    </td>
-    <td align="center" width="50%">
-      <img src="https://github.com/bhivgadearav.png" width="100px;" alt="Arav Bhivgade"/><br />
-      <sub><b>Arav Bhivgade</b></sub><br />
-      <a href="https://github.com/bhivgadearav" title="GitHub">
-        <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"/>
-      </a>
-      <a href="https://www.linkedin.com/in/aravbhivgade/" title="LinkedIn">
-        <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn"/>
-      </a>
-    </td>
-  </tr>
-</table>
+<div align="center" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+  <table>
+    <tr>
+      <td align="center" style="border: none;">
+        <img src="https://github.com/antpoolerjr.png" width="120px"/><br />
+        <sub><b>Anthony Pooler (Founder)</b></sub><br />
+        <a href="https://github.com/antpoolerjr">
+          <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white"/>
+        </a>
+        <a href="https://www.linkedin.com/in/anthony-pooler-27a842b5/">
+          <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white"/>
+        </a>
+      </td>
+      <td width="40px"></td>
+      <td align="center" style="border: none;">
+        <img src="https://github.com/bhivgadearav.png" width="120px"/><br />
+        <sub><b>Arav Bhivgade (Developer)</b></sub><br />
+        <a href="https://github.com/bhivgadearav">
+          <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white"/>
+        </a>
+        <a href="https://www.linkedin.com/in/aravbhivgade/">
+          <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white"/>
+        </a>
+      </td>
+    </tr>
+  </table>
+</div>
 
 </div>
 
