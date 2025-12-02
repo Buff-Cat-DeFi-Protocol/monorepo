@@ -128,9 +128,9 @@ The Twoside protocol is deployed on both **Ethereum** and **Base** networks usin
 ├─ apps/
 │  └─ web/                  # Next.js + TypeScript frontend/dApp
 ├─ contracts/
-│  ├─ base/                 # Base network contracts + Foundry project
-│  ├─ ethereum/             # Ethereum contracts + Foundry project
-│  └─ solana/               # (Optional) Solana adapters/examples
+│  ├─ base/                 # Base network contract + Foundry project
+│  ├─ ethereum/             # Ethereum contract + Foundry project
+│  └─ solana/               # Solana Program (Anchor Project)
 ├─ packages/
 │  ├─ eslint-config/        # ESLint shareable config
 │  └─ typescript-config/    # TS config packages & shared types
