@@ -25,13 +25,13 @@ import {
 import { UserWallet } from "@/features/wallet/components/UserWallet";
 
 const BlockchainSelector = () => {
-  const setBlockchain = useSetAtom(selectedBlockchainAtom);
+  const setSelectedBlockchain = useSetAtom(selectedBlockchainAtom);
 
   return (
     <Select
       onValueChange={(val: string) => {
         const sel = blockchains.find((b) => String(b.id) === val);
-        if (sel) setBlockchain(sel);
+        if (sel) setSelectedBlockchain(sel);
       }}
       defaultValue={blockchains[0].id.toString()}
     >
