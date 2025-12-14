@@ -107,15 +107,15 @@ The Twoside protocol is deployed on both **Ethereum** and **Base** networks usin
 
 | Contract           | Address                                      | Explorer                                                                                     |
 | ------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **Proxy**          | `0xd81945ce1f5df00418a9029f3a1c6acd688f6e8a` | [View on Etherscan](https://etherscan.io/address/0xd81945ce1f5df00418a9029f3a1c6acd688f6e8a) |
-| **Implementation** | `0x0988ea0c630ea86cdde34a236f7d49913fdbd477` | [View on Etherscan](https://etherscan.io/address/0x0988ea0c630ea86cdde34a236f7d49913fdbd477) |
+| **Proxy**          | `0xda0C7529D534D133E85AF10aDC050da29540dE4C` | [View on Etherscan](https://etherscan.io/address/0xda0C7529D534D133E85AF10aDC050da29540dE4C) |
+| **Implementation** | `0x62D5e116606d30cb529B1623Ca5c400D2F9DF433` | [View on Etherscan](https://etherscan.io/address/0x62D5e116606d30cb529B1623Ca5c400D2F9DF433) |
 
 ### Base Mainnet
 
 | Contract           | Address                                      | Explorer                                                                                    |
 | ------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Proxy**          | `0xd81945ce1f5df00418a9029f3a1c6acd688f6e8a` | [View on BaseScan](https://basescan.org/address/0xd81945ce1f5df00418a9029f3a1c6acd688f6e8a) |
-| **Implementation** | `0x0988ea0c630ea86cdde34a236f7d49913fdbd477` | [View on BaseScan](https://basescan.org/address/0x0988ea0c630ea86cdde34a236f7d49913fdbd477) |
+| **Proxy**          | `0xdD28610425F663D87F2ee938E238A394388Ed401` | [View on BaseScan](https://basescan.org/address/0xdD28610425F663D87F2ee938E238A394388Ed401) |
+| **Implementation** | `0x59f35804Fc27C3731FA3f48a0bB1912FF23f0Ba7` | [View on BaseScan](https://basescan.org/address/0x59f35804Fc27C3731FA3f48a0bB1912FF23f0Ba7) |
 
 > **Note:** Both networks use the same contract addresses and identical code.
 

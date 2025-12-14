@@ -1,6 +1,6 @@
 export const envVariables = {
   twosideContract: {
-    eth: "0xd81945CE1F5DF00418a9029f3a1c6aCd688f6E8a",
-    base: "0xd81945CE1F5DF00418a9029f3a1c6aCd688f6E8a",
+    eth: "0xda0C7529D534D133E85AF10aDC050da29540dE4C",
+    base: "0xdD28610425F663D87F2ee938E238A394388Ed401",
   },
 };

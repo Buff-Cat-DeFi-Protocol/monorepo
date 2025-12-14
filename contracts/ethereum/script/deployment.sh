@@ -9,11 +9,21 @@ if [ -f ".env" ]; then
   set +a
 fi
 
-# Deploy and create projects in one go
+# Deploy and create projects in one go (For Ethereum)
+# forge script Deploy.s.sol:DeployTwosideUpgradeableOnMainnet --verbosity \
+#     --rpc-url $RPC_URL \
+#     --broadcast \
+#     --private-key $OWNER_PRIVATE_KEY \
+#     --verify \
+#     --verifier etherscan \
+#     --etherscan-api-key $ETHERSCAN_API_KEY
+
+# Deploy and create projects in one go (For Base)
 forge script Deploy.s.sol:DeployTwosideUpgradeableOnMainnet --verbosity \
     --rpc-url $RPC_URL \
     --broadcast \
     --private-key $OWNER_PRIVATE_KEY \
     --verify \
+    --chain 8453 \
     --verifier etherscan \
     --etherscan-api-key $ETHERSCAN_API_KEY
