@@ -44,7 +44,7 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
           }
         },
       );
-      return newFilteredTokens;
+      return newFilteredTokens.slice(0, 10);
     }
     return [];
   }, [tokensList, searchTerm]);

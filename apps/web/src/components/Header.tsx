@@ -83,7 +83,7 @@ export const Header: React.FC = () => {
             <SheetTrigger>
               <Menu />
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="w-full">
               <SheetHeader>
                 <SheetTitle className="text-left mb-6">Menu</SheetTitle>
               </SheetHeader>

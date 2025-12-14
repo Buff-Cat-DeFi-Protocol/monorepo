@@ -28,6 +28,7 @@ const handleNoWalletConnectAttempt = (blockchain: Blockchain) => {
 };
 
 const WalletContent: React.FC = () => {
+  const { connect, connectors } = useConnect();
   const { address: evmAddress, isConnected: isEvmConnected } = useAccount();
   const { disconnect: disconnectEvm } = useDisconnect();
   const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
@@ -46,6 +47,13 @@ const WalletContent: React.FC = () => {
       });
     }
   }, [selectedBlockchain, evmAddress, isEvmConnected]);
+
+  useEffect(() => {
+    const injected = connectors.find((c) => c.id === "injected");
+    if (injected) {
+      connect({ connector: injected, chainId: selectedBlockchain.chainId });
+    }
+  }, [selectedBlockchain, connect, connectors]);
 
   if (!isEvmConnected || !currentUser.loggedIn) {
     return <EvmWalletConnect />;
