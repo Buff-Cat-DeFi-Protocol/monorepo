@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { blockchains } from "@/constants/blockchains";
 import { selectedBlockchainAtom } from "@/store/global";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import {
   Sheet,
   SheetContent,
@@ -25,15 +25,16 @@ import {
 import { UserWallet } from "@/features/wallet/components/UserWallet";
 
 const BlockchainSelector = () => {
-  const setSelectedBlockchain = useSetAtom(selectedBlockchainAtom);
+  const [selectedBlockchain, setSelectedBlockchain] = useAtom(selectedBlockchainAtom);
 
   return (
     <Select
+      value={selectedBlockchain.id}
       onValueChange={(val: string) => {
         const sel = blockchains.find((b) => String(b.id) === val);
         if (sel) setSelectedBlockchain(sel);
       }}
-      defaultValue={blockchains[0].id.toString()}
+      defaultValue={selectedBlockchain.id}
     >
       <SelectTrigger
         className="w-[180px] cursor-pointer shadow-none mb-4 lg:mb-0

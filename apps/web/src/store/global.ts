@@ -6,9 +6,11 @@ import { atom } from "jotai";
 export const currentUserAtom = atom<{
   address: string;
   loggedIn: boolean;
+  chainId: number;
 }>({
   address: "",
   loggedIn: false,
+  chainId: blockchains[0].chainId
 });
 
 export const tokenSelectorAtom = atom<TokenSelectorAtom>({

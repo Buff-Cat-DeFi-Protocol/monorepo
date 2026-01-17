@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { Connector, CreateConnectorFn, useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { Blockchain } from "@/types/global";
 import { useAtom, useAtomValue } from "jotai";
 import { currentUserAtom, selectedBlockchainAtom } from "@/store/global";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
+import { blockchains } from "@/constants/blockchains";
+import { useRouter } from "next/navigation";
 
 const formatWalletAddress = (address: string | null) => {
   if (!address) return "";
@@ -28,21 +30,39 @@ const handleNoWalletConnectAttempt = (blockchain: Blockchain) => {
 };
 
 const WalletContent: React.FC = () => {
-  const { address: evmAddress, isConnected: isEvmConnected } = useAccount();
-  const { disconnect: disconnectEvm } = useDisconnect();
+  const { address: evmAddress, isConnected: isEvmConnected, chainId: currentChainId } = useAccount();
+  const { disconnect: disconnectEvm, disconnectAsync } = useDisconnect();
   const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
   const selectedBlockchain = useAtomValue(selectedBlockchainAtom);
+  const router = useRouter();
+  const { switchChain } = useSwitchChain();
+
+  const handleDisconnect = async () => {
+    disconnectAsync();
+    router.refresh();
+  }
 
   useEffect(() => {
-    if (isEvmConnected && evmAddress) {
+    const disconnectWallet = async () => {
+      await handleDisconnect();
+      return;
+    }
+
+    if (isEvmConnected && evmAddress && currentChainId) {
+      if (currentChainId != selectedBlockchain.chainId) {
+        switchChain({ chainId: selectedBlockchain.chainId });
+        return;
+      }
       setCurrentUser({
         address: evmAddress,
         loggedIn: true,
+        chainId: currentChainId
       });
     } else {
       setCurrentUser({
         address: "",
         loggedIn: false,
+        chainId: blockchains[0].chainId
       });
     }
   }, [selectedBlockchain, evmAddress, isEvmConnected]);
@@ -66,7 +86,7 @@ const WalletContent: React.FC = () => {
         className="bg-black hover:bg-black text-primary-foreground
                 border-primary border-2 transition-all hover:scale-103
                 font-bold text-lg px-8 cursor-pointer"
-        onClick={() => disconnectEvm()}
+        onClick={handleDisconnect}
       >
         <LogOut className="h-4 w-4 mr-2" />
         Disconnect
@@ -80,6 +100,22 @@ export default WalletContent;
 function EvmWalletConnect() {
   const { connect, connectors: evmConnectors } = useConnect();
   const selectedBlockchain = useAtomValue(selectedBlockchainAtom);
+  const { switchChain } = useSwitchChain();
+  const { isConnected: isEvmConnected, chainId: currentChainId } = useAccount();
+
+  const handleConnection = (connector: Connector<CreateConnectorFn>) => {
+    if (typeof window !== "undefined" && window.ethereum == undefined) {
+      handleNoWalletConnectAttempt(selectedBlockchain);
+      return;
+    }
+    if (isEvmConnected && currentChainId !== selectedBlockchain.chainId) {
+      // If already connected but on wrong chain, switch instead of connect
+      switchChain({ chainId: selectedBlockchain.chainId });
+    } else {
+      // If not connected at all, proceed with normal connection
+      connect({ connector, chainId: selectedBlockchain.chainId });
+    }
+  }
 
   return (
     <Dialog>
@@ -97,7 +133,7 @@ function EvmWalletConnect() {
       <DialogContent className="h-76 w-104 neo-shadow-sm border border-custom-primary-color">
         <DialogHeader className="flex items-center justify-center w-full">
           <DialogTitle className="px-10 text-center text-custom-primary-color text-2xl mt-10">
-            Connect a Ethereum wallet to continue
+            Connect a {selectedBlockchain.name} wallet to continue
           </DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-38 w-full">
@@ -107,13 +143,7 @@ function EvmWalletConnect() {
                 key={connector.name}
                 className="bg-transparent hover:bg-transparent
                   text-custom-primary-color shadow-none cursor-pointer"
-                onClick={() => {
-                  if (window != undefined && window.ethereum == undefined) {
-                    handleNoWalletConnectAttempt(selectedBlockchain);
-                  } else {
-                    connect({ connector, chainId: selectedBlockchain.chainId });
-                  }
-                }}
+                onClick={() => handleConnection(connector)}
               >
                 <span className="w-full flex justify-between">
                   <span className="w-full flex items-start gap-2">

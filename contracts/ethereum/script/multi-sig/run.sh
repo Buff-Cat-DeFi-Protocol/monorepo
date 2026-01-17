@@ -9,13 +9,13 @@ if [ -f ".env" ]; then
   set +a
 fi
 
-forge script MultiSig.s.sol:MultiSig --verbosity \
-    --rpc-url $ETH_RPC_URL \
-    --broadcast \
-    --private-key $OWNER_PRIVATE_KEY
-
 # forge script MultiSig.s.sol:MultiSig --verbosity \
-#     --rpc-url $BASE_RPC_URL \
+#     --rpc-url $ETH_RPC_URL \
 #     --broadcast \
-#     --private-key $OWNER_PRIVATE_KEY \
-#     --chain 8453
+#     --private-key $OWNER_PRIVATE_KEY
+
+forge script MultiSig.s.sol:MultiSig --verbosity \
+    --rpc-url $BASE_RPC_URL \
+    --broadcast \
+    --private-key $OWNER_PRIVATE_KEY \
+    --chain 8453

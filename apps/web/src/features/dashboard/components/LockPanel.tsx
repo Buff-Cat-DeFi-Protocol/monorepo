@@ -125,6 +125,7 @@ export default function LockPanel() {
           abi: erc20Abi,
           functionName: "approve",
           args: [twosideContract, approvalAmount],
+          chainId: selectedBlockchain.chainId
         });
         toast.success("Signature", {
           description: `${sig}`,
@@ -187,6 +188,7 @@ export default function LockPanel() {
           abi: twosideAbi.abi,
           functionName: "lock",
           args: [tokenAddress, lockAmount],
+          chainId: selectedBlockchain.chainId
         });
         toast.success("Signature", {
           description: `${sig}`,

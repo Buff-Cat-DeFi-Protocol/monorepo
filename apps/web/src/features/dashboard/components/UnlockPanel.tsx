@@ -130,6 +130,7 @@ export default function UnlockPanel() {
           abi: erc20Abi,
           functionName: "approve",
           args: [twosideContract, approvalAmount],
+          chainId: selectedBlockchain.chainId
         });
         toast.success("Signature", {
           description: `${sig}`,
@@ -198,6 +199,7 @@ export default function UnlockPanel() {
           abi: twosideAbi.abi,
           functionName: "unlock",
           args: [tokenAddress, unlockAmount],
+          chainId: selectedBlockchain.chainId
         });
         toast.success("Signature", {
           description: `${sig}`,
